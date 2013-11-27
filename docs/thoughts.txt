@@ -1,0 +1,15 @@
+Reader - reads local data and stores onto hdfs.
+
+
+create NNFactory
+
+map(localData)
+    preprocessor obj -> localData
+    instantiate NN from Factory
+    Train NN for local (preprocessed data)
+
+reduce()
+    Factory aggregates NNs
+
+
+validate(NN)
