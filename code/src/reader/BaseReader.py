@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-class BaseReader:
+class BaseReader(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
@@ -9,4 +9,8 @@ class BaseReader:
 
     @abstractmethod
     def set_data_source(self, source):
+        pass
+    
+    @abstractmethod
+    def send_to_hdfs(self):
         pass
