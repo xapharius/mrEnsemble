@@ -1,5 +1,5 @@
 from reader.BaseReader import BaseReader
-from numpy import genfromtxt
+import reader
 
 class CSVReader(BaseReader):
     
@@ -13,3 +13,7 @@ class CSVReader(BaseReader):
 
     def send_to_hdfs(self):
         pass
+
+    def get_input_protocol(self):
+        return reader.CSVInputProtocol
+        
