@@ -10,3 +10,6 @@ class CSVReader(BaseReader):
     
     def set_data_source(self, csv_source):
         self.data = genfromtxt(csv_source, delimiter=',', skip_header=1)
+
+    def send_to_hdfs(self):
+        pass
