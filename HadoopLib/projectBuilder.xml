@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="HadoopLib.makejar" default="makejar" basedir=".">
-  <target name ="makejar" description="Create ML Hadoop lib jar">
-    <jar jarfile="target/ml-hadoop-lib.jar" includes="*.class" basedir="bin"/>
-  </target>
+	<property name="projectHome" location="." />
+	<target name="makejar" description="Create ML Hadoop lib jar">
+		<jar destfile="${projectHome}/target/ml-hadoop-lib.jar" basedir="${projectHome}/bin" />
+	</target>
 </project>
