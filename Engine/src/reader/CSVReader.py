@@ -17,4 +17,7 @@ class CSVReader(BaseReader):
 
     def get_input_protocol(self):
         return reader.CSVInputProtocol
+    
+    def get_input_format(self):
+        return 'org.apache.hadoop.mapred.NLineInputFormat'
         
