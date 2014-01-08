@@ -1,5 +1,6 @@
 from reader.BaseReader import BaseReader
 import reader
+import numpy as np
 
 class CSVReader(BaseReader):
     
@@ -9,7 +10,7 @@ class CSVReader(BaseReader):
         return self.data
     
     def set_data_source(self, csv_source):
-        self.data = genfromtxt(csv_source, delimiter=',', skip_header=1)
+        self.data = np.genfromtxt(csv_source, delimiter=',', skip_header=1)
 
     def send_to_hdfs(self):
         pass
