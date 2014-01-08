@@ -1,12 +1,18 @@
+import numpy as np
+
 class CSVInputProtocol():
     '''
-    MrJob input protocol that creates a list from a CSV line
+    MrJob input protocol that creates a matrix from multiple CSV lines parsing
+    each value as float
     '''
     
-    def read(self, line):
-        values = line.decode('utf-8').split(',')
-        values = [x.strip() for x in values]
-        return values
+    def read(self, line_bytes):
+        lines = np.array([line.split(',') for line in line_bytes.decode('utf-8').split('\n')])
+        strip = np.vectorize(lambda cell: float(cell.strip()))
+        return strip(lines);
     
     def write(self, key, value):
-        return bytearray(','.join(value), 'utf-8')
+        to_str = np.vectorize(lambda cell: str(cell))
+        value = to_str(value)
+        lines = [','.join(line) for line in value]
+        return bytearray('\n'.join(lines), 'utf-8')

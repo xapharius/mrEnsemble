@@ -14,7 +14,8 @@ import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
  
 public class WholeFileInputFormat extends FileInputFormat<Text, BytesWritable> {
-    @Override
+    
+	@Override
     protected boolean isSplitable(FileSystem fs, Path filename) {
         return false;
     }
