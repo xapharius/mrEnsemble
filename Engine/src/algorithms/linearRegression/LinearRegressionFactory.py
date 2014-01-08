@@ -4,7 +4,7 @@ Created on Dec 4, 2013
 @author: xapharius
 '''
 
-from algorithms import AbstractAlgorithmFactory
+from algorithms.AbstractAlgorithmFactory import AbstractAlgorithmFactory
 from algorithms.linearRegression import LinearRegression
 import numpy as np 
 
@@ -20,9 +20,29 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         Initializes the Factory and sets the parameters for the Model
         '''
         self.nrLRparams = nrParams
+        self.linRegArr = np.array([])
     
-    def instanciate(self):
+    def get_instance(self):
         '''Create a LinearRegression Object
         :return: Object implementing AbstractAlgorithm
         '''
-        pass  
+        newLinReg = LinearRegression(self.nrLRparams);
+        self.linRegArr = np.append(self.linRegArr, newLinReg)
+        return newLinReg
+        
+    def aggregate(self):
+        '''Aggregate all linRegs from linRegArr by AVERAGING
+        :return combined linReg
+        '''
+        aggrLinRegParams = np.zeros([self.nrLRparams, ])
+        for i in range(len(self.linRegArr)):
+            aggrLinRegParams += self.linRegArr[i].params
+        aggrLinRegParams /= len(self.linRegArr)
+        
+        aggrLinReg = LinearRegression(self.nrLRparams)
+        aggrLinReg.set_params(aggrLinRegParams)
+        
+        return aggrLinReg
+    
+        
+        

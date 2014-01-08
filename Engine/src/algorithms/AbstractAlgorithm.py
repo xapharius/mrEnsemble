@@ -13,13 +13,16 @@ class AbstractAlgorithm(object):
     '''
     __metaclass__ = ABCMeta
   
-    #TODO Dataset as argument    
+    #TODO: Dataset type as argument    
     @abstractmethod
     def train(self, dataSet):
         pass
     
-    #TODO Dataset as argument    
+    #TODO: Dataset type as argument    
     @abstractmethod
     def predict(self, dataSet):
         pass
-        
+    
+    @abstractmethod
+    def set_params(self, parameters):
+        pass
