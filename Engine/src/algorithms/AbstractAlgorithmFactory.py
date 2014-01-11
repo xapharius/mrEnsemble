@@ -25,7 +25,7 @@ class AbstractAlgorithmFactory(object):
         '''Aggregate multiple AbstractAlgorithms into one'''
         pass
     
-    #TODO: method necessary?
+    #TODO: confAlg method necessary?
     """
     @abstractmethod
     def confAlg(self):

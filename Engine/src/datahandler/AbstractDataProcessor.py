@@ -18,18 +18,19 @@ class AbstractDataProcessor(object):
     def __init__(self, rawData):
         '''
         Constructor
+        @param rawData: numpy.ndarray 
         '''
         self.rawData = rawData;
     
     @abstractmethod
-    def normalizeData(self):
+    def normalize_data(self):
         '''
-        Normalizes Data using the statistics from the preprocessor, passed through the Engine's Job Configuration
+        Normalizes Local Data using the statistics from the preprocessor, passed through the Engine's Job Configuration
         '''
         pass
     
     @abstractmethod
-    def getData(self):
+    def get_data(self):
         '''
         Package and return processed data
         @return: Dataclass specific DataSet

@@ -30,6 +30,7 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         self.linRegArr = np.append(self.linRegArr, newLinReg)
         return newLinReg
         
+    #TODO: Aggregation has to be done by Engine's reducer
     def aggregate(self):
         '''Aggregate all linRegs from linRegArr by AVERAGING
         :return combined linReg

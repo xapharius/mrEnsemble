@@ -12,16 +12,20 @@ class AbstractAlgorithm(object):
     Specifies the core functionalities an Algorithm should implement.
     '''
     __metaclass__ = ABCMeta
-  
-    #TODO: Dataset type as argument    
+     
     @abstractmethod
     def train(self, dataSet):
+        '''
+        @param dataSet: AbstractDataSet
+        '''
+        
         pass
     
-    #TODO: Dataset type as argument    
     @abstractmethod
     def predict(self, dataSet):
-        pass
+        '''
+        @param dataSet: AbstractDataSet
+        '''
     
     @abstractmethod
     def set_params(self, parameters):

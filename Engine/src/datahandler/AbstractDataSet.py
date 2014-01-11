@@ -18,4 +18,5 @@ class AbstractDataSet(object):
         '''
         Constructor
         '''
+        pass
         

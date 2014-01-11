@@ -24,7 +24,7 @@ class AbstractPreProcessor(object):
         '''
         pass  
         
-    #TODO: map/reduce evoke here or data dependent?    
+    #TODO: Send data to job_conf here or in Engine? 
     @abstractmethod
     def get_statistics(self, dataSource):
         '''
