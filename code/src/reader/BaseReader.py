@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 
-class BaseReader:
+class BaseReader(object):
     __metaclass__ = ABCMeta
 
     @abstractmethod
