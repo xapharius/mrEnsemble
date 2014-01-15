@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="HadoopML" basedir="." default="archive">
+    <target name="archive">
+      <tar compression="gzip" destfile="target/hadoop_ml.tar.gz">
+        <tarfileset dir="src" >
+          <include name="**" /> 
+        </tarfileset>
+      </tar>
+    </target>
+</project>
