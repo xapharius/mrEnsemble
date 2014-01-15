@@ -14,7 +14,7 @@ class AbstractAlgorithmFactory(object):
     __metaclass__ = ABCMeta
         
     @abstractmethod
-    def instanciate(self):
+    def get_instance(self):
         '''Create an Algorithm Object
         :return: Object implementing AbstractAlgorithm
         '''
@@ -25,7 +25,10 @@ class AbstractAlgorithmFactory(object):
         '''Aggregate multiple AbstractAlgorithms into one'''
         pass
     
+    #TODO: confAlg method necessary?
+    """
     @abstractmethod
     def confAlg(self):
         '''Configure specific Algorithm'''
         pass
+    """

@@ -12,9 +12,9 @@ class LinearRegressionTest(unittest.TestCase):
 
 
     def setUp(self):
-        class localDataSet(object):
+        class LocalDataSet(object):
             pass  
-        dataSet = localDataSet()
+        dataSet = LocalDataSet()
         
         inputs = []
         targets = []
@@ -30,23 +30,23 @@ class LinearRegressionTest(unittest.TestCase):
         pass
 
 
-    def testConstructor(self):
+    def test_constructor(self):
         paramSize = 5
         linreg = LinearRegression(paramSize)
-        assert linreg.params.size == paramSize 
+        assert linreg.nrParams == paramSize 
         
-    def testTrainExecutes(self):
+    def test_trainExecutes(self):
         linreg = LinearRegression(2)
         linreg.train(self.dataSet)
         
-    def testPredictExecutes(self):
+    def test_predictExecutes(self):
         linreg = LinearRegression(2)
         linreg.train(self.dataSet)
         
-        class localDataSet(object):
+        class LocalDataSet(object):
             inputs = [2]
             
-        dataSet = localDataSet()     
+        dataSet = LocalDataSet()     
         linreg.predict(dataSet)
         
 
