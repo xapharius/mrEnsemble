@@ -8,8 +8,11 @@ class NLineCSVInputProtocol():
     
     def read(self, data):
         key, value = data.split('\t', 1)
+        delimiter = ','
+        if value.find(';') != -1:
+            delimiter = ';'
         lines = value.split('\\n')
-        arr = np.array([line.split(',') for line in lines])
+        arr = np.array([line.split(delimiter) for line in lines])
         strip = np.vectorize(lambda cell: float(cell.strip()))
         return key, strip(arr);
     

@@ -12,7 +12,7 @@ class AbstractAlgorithm(object):
     Specifies the core functionalities an Algorithm should implement.
     '''
     __metaclass__ = ABCMeta
-     
+    
     @abstractmethod
     def train(self, dataSet):
         '''

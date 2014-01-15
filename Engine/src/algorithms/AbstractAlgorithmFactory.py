@@ -28,6 +28,24 @@ class AbstractAlgorithmFactory(object):
         '''
         pass
     
+    @abstractmethod
+    def serialize(self, alg_instance):
+        '''
+        Serialize an existing algorithm instance. Usually this means creating a
+        representation of the instance's parameters/weights.
+        :param alg_instance algorithm instance that was created by this factory
+        and should be serialized
+        '''
+        pass
+    
+    @abstractmethod
+    def deserialize(self, serialized):
+        '''
+        Creates a new algorithm instance that represents the given serialized
+        algorithm object created through the method 'serialize'.
+        '''
+        pass
+
     #TODO: confAlg method necessary?
     """
     @abstractmethod

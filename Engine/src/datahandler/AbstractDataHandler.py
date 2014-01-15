@@ -33,4 +33,11 @@ class AbstractDataHandler(object):
         @return: Creates a DataProcessor for DataHandler's Data Class and associates it rawData.
         '''
         pass
-        
+    
+    @abstractmethod
+    def get_configuration(self):
+        '''
+        @return: Configuration specifying MrJob protocols for data exchange.
+        @rtype: AbstractConfiguration
+        '''
+        pass

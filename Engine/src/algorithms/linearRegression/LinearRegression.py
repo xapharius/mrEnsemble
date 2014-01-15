@@ -44,4 +44,3 @@ class LinearRegression(AbstractAlgorithm):
         if self.nrParams != parameters.size:
             raise Exception("overwriting parameters have not same shape as model")
         self.params = parameters
-        

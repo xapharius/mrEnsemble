@@ -46,5 +46,11 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         
         return aggrLinReg
     
-        
+    def serialize(self, alg_instance):
+        return alg_instance.params.tolist()
+    
+    def deserialize(self, serialized):
+        newLinReg = LinearRegression(self.nrLRparams);
+        newLinReg.set_params(np.array(serialized))
+        return newLinReg
         
