@@ -21,7 +21,7 @@ class LinearRegression(AbstractAlgorithm):
         self.params = np.random.rand(_nrParams,)
         self.nrParams = self.params.size
 
-    #TODO: may raise exception at trying to invert singular matrix        
+    #TODO: may raise exception when trying to invert singular matrix        
     def train(self, _dataSet):
         '''
         Trains Model for given dataset

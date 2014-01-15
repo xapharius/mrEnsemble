@@ -21,8 +21,11 @@ class AbstractAlgorithmFactory(object):
         pass
     
     @abstractmethod
-    def aggregate(self):
-        '''Aggregate multiple AbstractAlgorithms into one'''
+    def aggregate(self, modelsArr):
+        '''
+        Aggregate multiple AbstractAlgorithms into one
+        :param modelsArr np.array of Class implementing AbstractAlgorithm
+        '''
         pass
     
     #TODO: confAlg method necessary?

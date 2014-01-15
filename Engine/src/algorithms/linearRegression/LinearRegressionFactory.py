@@ -20,25 +20,26 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         Initializes the Factory and sets the parameters for the Model
         '''
         self.nrLRparams = nrParams
-        self.linRegArr = np.array([])
+        self.nrModels = 0;
     
     def get_instance(self):
         '''Create a LinearRegression Object
         :return: Object implementing AbstractAlgorithm
         '''
         newLinReg = LinearRegression(self.nrLRparams);
-        self.linRegArr = np.append(self.linRegArr, newLinReg)
+        self.nrModels = self.nrModels + 1
         return newLinReg
         
-    #TODO: Aggregation has to be done by Engine's reducer
-    def aggregate(self):
-        '''Aggregate all linRegs from linRegArr by AVERAGING
+    def aggregate(self, linRegArr):
+        '''Aggregate all linRegs from linRegArr Prameter by AVERAGING
+        :param linRegArr: np.array of LinearRegression
         :return combined linReg
         '''
         aggrLinRegParams = np.zeros([self.nrLRparams, ])
-        for i in range(len(self.linRegArr)):
-            aggrLinRegParams += self.linRegArr[i].params
-        aggrLinRegParams /= len(self.linRegArr)
+        
+        for i in range(len(linRegArr)):
+            aggrLinRegParams += linRegArr[i].params
+        aggrLinRegParams /= len(linRegArr)
         
         aggrLinReg = LinearRegression(self.nrLRparams)
         aggrLinReg.set_params(aggrLinRegParams)

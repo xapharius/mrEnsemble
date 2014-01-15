@@ -29,4 +29,7 @@ class AbstractAlgorithm(object):
     
     @abstractmethod
     def set_params(self, parameters):
+        '''
+        @param parameters must match in shape with the values given to Factory. Model can't change parameter shape.
+        '''
         pass
