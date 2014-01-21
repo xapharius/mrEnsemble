@@ -12,12 +12,15 @@ class NumericalDataSet(AbstractDataSet):
     '''
 
 
-    def __init__(self, inputs, labels):
+    def __init__(self, inputs, targets):
         '''
         Constructor
         @param inputs: numpy.ndarray
-        @param labels: numpy.ndarray
+        @param targets: numpy.ndarray
         '''
         self.inputs = inputs
-        self.labels = labels
+        self.targets = targets
+        self.nrInputVars = inputs.shape[1]
+        self.nrLabelVars = targets.shape[1]
+        self.nrObservations = inputs.shape[0]
         

@@ -15,18 +15,19 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
     '''
 
 
-    def __init__(self, nrParams):
+    def __init__(self, nrInputVars):
         '''
         Initializes the Factory and sets the parameters for the Model
         '''
-        self.nrLRparams = nrParams
+        self.nrInputVars = nrInputVars
+        self.nrLRparams = nrInputVars+1
         self.nrModels = 0;
     
     def get_instance(self):
         '''Create a LinearRegression Object
         :return: Object implementing AbstractAlgorithm
         '''
-        newLinReg = LinearRegression(self.nrLRparams);
+        newLinReg = LinearRegression(self.nrInputVars);
         self.nrModels = self.nrModels + 1
         return newLinReg
         
@@ -41,7 +42,7 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
             aggrLinRegParams += linRegArr[i].params
         aggrLinRegParams /= len(linRegArr)
         
-        aggrLinReg = LinearRegression(self.nrLRparams)
+        aggrLinReg = LinearRegression(self.nrInputVars)
         aggrLinReg.set_params(aggrLinRegParams)
         
         return aggrLinReg
@@ -50,7 +51,7 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         return alg_instance.params.tolist()
     
     def deserialize(self, serialized):
-        newLinReg = LinearRegression(self.nrLRparams);
+        newLinReg = LinearRegression(self.nrInputVars);
         newLinReg.set_params(np.array(serialized))
         return newLinReg
         

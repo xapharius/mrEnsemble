@@ -13,12 +13,13 @@ class LinearRegression(AbstractAlgorithm):
     '''
 
 
-    def __init__(self, _nrParams):
+    def __init__(self, _nrInputVars):
         '''
         Creates a linear Regression model - the parameters as a row vector
-        :param nrParams: number of parameters Liner Model should have
+        :param nrInputs: number of latent variables Liner Model should have
         '''
-        self.params = np.random.rand(_nrParams,)
+        #add bias parameter
+        self.params = np.random.rand(_nrInputVars+1,)
         self.nrParams = self.params.size
 
     #TODO: may raise exception when trying to invert singular matrix        
@@ -27,20 +28,32 @@ class LinearRegression(AbstractAlgorithm):
         Trains Model for given dataset
         Transactions for both inputs and targets should be as rows
         '''
-        self.params = (_dataSet.inputs.T * _dataSet.inputs).I * _dataSet.inputs.T * _dataSet.targets
-    
+        #add column of ones to dataset
+        inputs = self.addOnes(_dataSet.inputs)
+        pseudoInv = np.linalg.pinv(np.dot(inputs.T, inputs))
+        part2 = np.dot(inputs.T, _dataSet.targets)
+        self.params = np.dot(pseudoInv, part2)
+        
+    def addOnes(self, _matrix):
+        '''
+        @param param: np.array
+        @return: same input matrix with an extra column of ones in front
+        @rtype: np.array
+        '''
+        return np.append(np.ones([_matrix.shape[0], 1]), _matrix, 1)
 
     def predict(self, _dataSet):
         '''
         Predicts targets for given dataset.inputs
         '''
-        return self.params * _dataSet.inputs
+        inputs = self.addOnes(_dataSet.inputs)
+        return np.dot(inputs, self.params.T)
     
     def set_params(self, parameters):
         '''Set parameters of predefined model(shape of parameters already specified)
         @param parameters: np.array
         @raise exception: if given parameters don't match in shape with model
         '''
-        if self.nrParams != parameters.size:
+        if (self.nrParams,) != parameters.shape:
             raise Exception("overwriting parameters have not same shape as model")
         self.params = parameters

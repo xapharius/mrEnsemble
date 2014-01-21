@@ -17,9 +17,9 @@ class Test(unittest.TestCase):
         unittest.TestCase.setUp(self)
         
     def test_constructor(self):
-        paramSize = 2;
-        linRegFactory = LinearRegressionFactory(paramSize)
-        assert_equal(paramSize, linRegFactory.nrLRparams)
+        nrInputVars = 2;
+        linRegFactory = LinearRegressionFactory(nrInputVars)
+        assert_equal(nrInputVars+1, linRegFactory.nrLRparams)
         assert_equal(linRegFactory.nrModels, 0)
 
     def test_get_instance(self):
@@ -33,7 +33,7 @@ class Test(unittest.TestCase):
     def test_aggregate(self):
         ''' test if aggregation, by averaging, works for simple example
         '''
-        linRegFactory = LinearRegressionFactory(3)
+        linRegFactory = LinearRegressionFactory(2)
         linRegArr = np.array([])
         
         linReg1 = linRegFactory.get_instance()
