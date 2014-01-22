@@ -6,7 +6,7 @@ Created on Dec 4, 2013
 
 from algorithms.AbstractAlgorithmFactory import AbstractAlgorithmFactory
 from algorithms.linearRegression import LinearRegression
-import numpy as np 
+import numpy as np
 
 class LinearRegressionFactory(AbstractAlgorithmFactory):
     '''
@@ -36,7 +36,7 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         :param linRegArr: np.array of LinearRegression
         :return combined linReg
         '''
-        aggrLinRegParams = np.zeros([self.nrLRparams, ])
+        aggrLinRegParams = np.zeros([1, self.nrLRparams])
         
         for i in range(len(linRegArr)):
             aggrLinRegParams += linRegArr[i].params
@@ -51,7 +51,12 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         return alg_instance.params.tolist()
     
     def deserialize(self, serialized):
-        newLinReg = LinearRegression(self.nrInputVars);
-        newLinReg.set_params(np.array(serialized))
-        return newLinReg
+        deserialized = []
+        for s in serialized:
+            # observations are row vectors
+            params = np.array(s).T
+            lin_reg = LinearRegression(self.nrInputVars);
+            lin_reg.set_params(params)
+            deserialized.append(lin_reg)
+        return deserialized
         

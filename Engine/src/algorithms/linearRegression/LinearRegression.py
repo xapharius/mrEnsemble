@@ -5,7 +5,7 @@ Created on Dec 4, 2013
 '''
 from algorithms.AbstractAlgorithm import AbstractAlgorithm
 import numpy as np 
-from numpy.f2py.auxfuncs import throw_error
+import sys
 
 class LinearRegression(AbstractAlgorithm):
     '''
@@ -22,14 +22,14 @@ class LinearRegression(AbstractAlgorithm):
         self.params = np.random.rand(_nrInputVars+1,)
         self.nrParams = self.params.size
 
-    #TODO: may raise exception when trying to invert singular matrix        
     def train(self, _dataSet):
         '''
         Trains Model for given dataset
         Transactions for both inputs and targets should be as rows
         '''
-        #add column of ones to dataset
+        # add column of ones to dataset
         inputs = self.addOnes(_dataSet.inputs)
+        sys.stderr.write('input: ' + str(inputs) + '\n')
         pseudoInv = np.linalg.pinv(np.dot(inputs.T, inputs))
         part2 = np.dot(inputs.T, _dataSet.targets)
         self.params = np.dot(pseudoInv, part2)
@@ -50,10 +50,11 @@ class LinearRegression(AbstractAlgorithm):
         return np.dot(inputs, self.params.T)
     
     def set_params(self, parameters):
+        sys.stderr.write("set params: " + str(parameters) + "\n")
         '''Set parameters of predefined model(shape of parameters already specified)
         @param parameters: np.array
         @raise exception: if given parameters don't match in shape with model
         '''
-        if (self.nrParams,) != parameters.shape:
-            raise Exception("overwriting parameters have not same shape as model")
+        if (1, self.nrParams) != parameters.shape:
+            raise Exception("overwriting parameters have not same shape as model.\n        model: " + str((self.nrParams,)) + "\n  overwriting: " + str(parameters.shape))
         self.params = parameters

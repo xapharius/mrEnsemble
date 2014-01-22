@@ -5,6 +5,7 @@ from algorithms.linearRegression.LinearRegressionFactory import \
     LinearRegressionFactory
 from datahandler.numerical.NumericalDataHandler import NumericalDataHandler
 import reader
+import sys
 
 
 class Engine(MRJob):
@@ -16,7 +17,7 @@ class Engine(MRJob):
     INTERNAL_PROTOCOL = mrjob.protocol.JSONProtocol
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
     HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NLineFileInputFormat'
-    JOBCONF = { 'hadoopml.fileinput.linespermap': 2 }
+    JOBCONF = { 'hadoopml.fileinput.linespermap': 200 }
  
     def init(self, factory, data_handler):
         self.factory = factory
@@ -40,13 +41,19 @@ class Engine(MRJob):
         data_set = self.data_handler.get_DataProcessor(value).get_data()
         alg.train(data_set)
         # TODO: serialize algorithm (parameters of course)
-        yield key, self.factory.serialize(alg)
+        serialized = self.factory.serialize(alg)
+        yield 0, serialized
     
-    def reducer(self, key, value):
+    def reducer(self, key, values):
         # TODO: value should be np.array of type LinearRegression
         # TODO: serialize algorithm (parameters of course)
-        alg = self.factory.aggregate(self.factory.deserialize(value))
-        yield key, self.factory.serialize(alg) 
+        
+        # 'values' is a generator, "convert" to list
+        values_list = list(values)
+        sys.stderr.write("reducer: \n  key: " + str(key) + "\n  value: " + str(values_list) + "\n")
+        self.init(LinearRegressionFactory(11), NumericalDataHandler(11, 1))
+        alg = self.factory.aggregate(self.factory.deserialize(values_list))
+        yield 0, self.factory.serialize(alg)
 
     def steps(self):
         return [
@@ -54,7 +61,6 @@ class Engine(MRJob):
                     reducer=self.reducer)]
 
 if __name__ == '__main__':
-    
     nrParams = 11
     nrLabelDim = 1
     

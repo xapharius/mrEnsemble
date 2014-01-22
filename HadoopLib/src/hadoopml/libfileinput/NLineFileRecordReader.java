@@ -12,7 +12,7 @@ import org.apache.hadoop.mapred.RecordReader;
 
 public class NLineFileRecordReader implements RecordReader<LongWritable, Text> {
 
-	private static final String NUMBER_OF_LINES_PARAM_NAME = "hadoopml.fileinput.linespermap";
+	public static final String NUMBER_OF_LINES_PARAM_NAME = "hadoopml.fileinput.linespermap";
 	
 	private LineRecordReader lineReader;
 	private LongWritable currentKey;
@@ -55,13 +55,11 @@ public class NLineFileRecordReader implements RecordReader<LongWritable, Text> {
 	@Override
 	public boolean next(LongWritable key, Text value) throws IOException {
 		if (!lineReader.next(currentKey, currentValue)) {
-			System.out.println("no lines");
 			key.set(0);
 			value.set("");
 			return false;
 		}
-		System.out.println("first line read: \"" + currentValue.toString() + "\"");
-		LongWritable localKey = lineReader.createKey();
+		LongWritable localKey = currentKey;
 		Text localValue = lineReader.createValue();
 		// append lines until specified number is reached
 		for (int i = 0; i < numberOfLines-1; i++) {
@@ -71,14 +69,15 @@ public class NLineFileRecordReader implements RecordReader<LongWritable, Text> {
 				value.set(currentValue.getBytes());
 				return true;
 			}
-			System.out.println("appending line \"" + localValue + "\"");
 			byte[] bytes = new byte[localValue.getLength() + 2];
 			bytes[0] = '\\';
 			bytes[1] = 'n';
-			System.arraycopy(localValue.getBytes(), 0, bytes, 2, localValue.getBytes().length);
-			currentValue.append(bytes, 0, bytes.length);
+			System.arraycopy(localValue.getBytes(), 0, bytes, 2, localValue.getLength());
+			byte[] result = new byte[currentValue.getLength() + bytes.length];
+			System.arraycopy(currentValue.getBytes(), 0, result, 0, currentValue.getLength());
+			System.arraycopy(bytes, 0, result, currentValue.getLength(), bytes.length);
+			currentValue.set(result);
 		}
-		System.out.println("result: \"" + currentValue.toString() + "\"");
 		key.set(localKey.get());
 		value.set(currentValue.getBytes());
 		return true;
