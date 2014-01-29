@@ -69,6 +69,7 @@ public class NLineFileRecordReader implements RecordReader<LongWritable, Text> {
 				value.set(currentValue.getBytes());
 				return true;
 			}
+			// append line
 			byte[] bytes = new byte[localValue.getLength() + 2];
 			bytes[0] = '\\';
 			bytes[1] = 'n';

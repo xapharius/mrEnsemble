@@ -29,7 +29,6 @@ class LinearRegression(AbstractAlgorithm):
         '''
         # add column of ones to dataset
         inputs = self.addOnes(_dataSet.inputs)
-        sys.stderr.write('input: ' + str(inputs) + '\n')
         pseudoInv = np.linalg.pinv(np.dot(inputs.T, inputs))
         part2 = np.dot(inputs.T, _dataSet.targets)
         self.params = np.dot(pseudoInv, part2)
