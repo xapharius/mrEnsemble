@@ -33,7 +33,7 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         
     def aggregate(self, linRegArr):
         '''Aggregate all linRegs from linRegArr Prameter by AVERAGING
-        :param linRegArr: np.array of LinearRegression
+        :param linRegArr: (normal)array of LinearRegression
         :return combined linReg
         '''
         aggrLinRegParams = np.zeros([1, self.nrLRparams])

@@ -45,7 +45,6 @@ class Engine(MRJob):
         yield 0, serialized
     
     def reducer(self, key, values):
-        # TODO: value should be np.array of type LinearRegression
         # TODO: serialize algorithm (parameters of course)
         
         # 'values' is a generator, "convert" to list
