@@ -25,8 +25,8 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
         '''Create a PredictionNN Object
         :return: Object implementing AbstractAlgorithm
         '''
-        newLinReg = PredictionNN(self.arrLayerSizes);
-        return newLinReg
+        newNN = PredictionNN(self.arrLayerSizes);
+        return newNN
         
     def aggregate(self, NNArr):
         '''Aggregate all PredictionNN from NNArr Prameter by AVERAGING
@@ -36,8 +36,8 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
         
         aggrWeightsArr = []
         for layer in range(len(self.arrLayerSizes)-1):
-            weights = np.zeros(self.arrLayerSizes[layer], self.arrLayerSizes[layer+1])
-            aggrWeightsArr = [aggrWeightsArr, weights]
+            weights = np.zeros((self.arrLayerSizes[layer]+1, self.arrLayerSizes[layer+1]))
+            aggrWeightsArr.append(weights)
         
         #for each network add respective layers
         for NN in NNArr:

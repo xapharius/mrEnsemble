@@ -21,14 +21,12 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         '''
         self.nrInputVars = nrInputVars
         self.nrLRparams = nrInputVars+1
-        self.nrModels = 0;
     
     def get_instance(self):
         '''Create a LinearRegression Object
         :return: Object implementing AbstractAlgorithm
         '''
         newLinReg = LinearRegression(self.nrInputVars);
-        self.nrModels = self.nrModels + 1
         return newLinReg
         
     def aggregate(self, linRegArr):

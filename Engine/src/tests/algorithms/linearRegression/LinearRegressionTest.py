@@ -8,6 +8,7 @@ import numpy as np
 from algorithms.linearRegression.LinearRegression import LinearRegression
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
 from numpy.ma.testutils import assert_array_equal
+import sys
 
 
 class LinearRegressionTest(unittest.TestCase):
@@ -44,6 +45,28 @@ class LinearRegressionTest(unittest.TestCase):
     def test_predictExecutes(self):
         linreg = LinearRegression(self.dataSet.nrInputVars)
         linreg.predict(self.dataSet)
+        
+    # TODO: to be run   
+    def test_set_params_positive(self):
+        nrInputVars = 3;
+        linreg = LinearRegression(nrInputVars)
+        try:
+            linreg.set_params([1,2,3,4])
+        except:
+            self.fail("overriding params should be fine");
+    
+    # TODO: to be run    
+    def test_set_params_negative(self):
+        nrInputVars = 3;
+        linreg = LinearRegression(nrInputVars)
+        try:
+            linreg.set_params([1,2,3])
+            self.fail("overriding params are not fine, but no exception thrown");
+        except:
+            expected_errmsg = "overwriting parameters have not the same shape as the model"
+            errmsg = str(sys.exc_info()[1])
+            assert(errmsg.startswith(expected_errmsg))
+        
         
 
 

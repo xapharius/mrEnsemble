@@ -55,5 +55,5 @@ class LinearRegression(AbstractAlgorithm):
         @raise exception: if given parameters don't match in shape with model
         '''
         if (1, self.nrParams) != parameters.shape:
-            raise Exception("overwriting parameters have not same shape as model.\n        model: " + str((self.nrParams,)) + "\n  overwriting: " + str(parameters.shape))
+            raise Exception("overwriting parameters have not the same shape as the model.\n        model: " + str((self.nrParams,)) + "\n  overwriting: " + str(parameters.shape))
         self.params = parameters
