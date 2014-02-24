@@ -18,7 +18,7 @@ class LinearRegression(AbstractAlgorithm):
         Creates a linear Regression model - the parameters as a row vector
         :param nrInputs: number of latent variables Liner Model should have
         '''
-        #add bias parameter
+        # add bias parameter
         self.params = np.random.rand(_nrInputVars+1,)
         self.nrParams = self.params.size
 

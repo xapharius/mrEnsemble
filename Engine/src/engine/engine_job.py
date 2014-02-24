@@ -8,7 +8,7 @@ import reader
 import sys
 
 
-class Engine(MRJob):
+class EngineJob(MRJob):
     '''
     classdocs
     '''
@@ -22,7 +22,7 @@ class Engine(MRJob):
     def init(self, factory, data_handler):
         self.factory = factory
         self.data_handler = data_handler
-         
+        
         # set configuration
         if self.data_handler.get_configuration():
             self.conf = data_handler.get_configuration()
@@ -45,6 +45,7 @@ class Engine(MRJob):
         yield 0, serialized
     
     def reducer(self, key, values):
+        # TODO: value should be np.array of type LinearRegression
         # TODO: serialize algorithm (parameters of course)
         
         # 'values' is a generator, "convert" to list
@@ -60,12 +61,5 @@ class Engine(MRJob):
                     reducer=self.reducer)]
 
 if __name__ == '__main__':
-    nrParams = 11
-    nrLabelDim = 1
+    EngineJob.run()
     
-    factory = LinearRegressionFactory(nrParams)
-    data_handler = NumericalDataHandler(nrParams, nrLabelDim) 
-    engine = Engine()
-    engine.init(factory, data_handler)
-    
-    engine.run()
