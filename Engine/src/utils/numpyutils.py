@@ -9,13 +9,14 @@ def addOneToVec(nparr):
     '''
     add a one to row or column vec(array)
     @param nparr: np.Array
-    @rtype: np.Array 
+    @rtype: 2-dim np.Array 
     @raise exception: nparr hase not a vector shape
     '''
     
     # nparr is a (one dimensional) vector 
     if len(nparr.shape) == 1:
         t_nparr = np.append(nparr, 1)
+        t_nparr = np.reshape(t_nparr, (1,len(t_nparr)))
     # row vector (array)
     elif nparr.shape[0] == 1:   
         t_nparr = np.append(nparr, [[1]], 1)

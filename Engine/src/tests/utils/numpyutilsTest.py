@@ -19,7 +19,7 @@ class numpyutilsTest(unittest.TestCase):
         #vector array
         vec = np.array([1,2,3])
         vecOne = nputils.addOneToVec(vec)
-        assert len(vecOne.shape) == 1 and vecOne.shape[0] == vec.shape[0]+1, "anddOneToVec fails for normal vec (x,)"
+        assert vecOne.shape[0] == 1 and vecOne.shape[1] == vec.shape[0]+1, "anddOneToVec fails for normal vec (x,)"
         
         #row vector array
         vec = np.array([[1,2,3]])
