@@ -13,17 +13,24 @@ class NumericalDataSet(AbstractDataSet):
     '''
 
 
-    def __init__(self, inputs, targets):
+    def __init__(self, inputs, targets = None):
         '''
         Constructor
         @param inputs: numpy.ndarray (nr_obs * nr_vars)
         @param targets: numpy.ndarray (nr_obs * nr_vars)
+        @raise exception: if targets not null then they must have same nr of observations 
         '''
         self.inputs = inputs
         self.targets = targets
         self.nrInputVars = inputs.shape[1]
-        self.nrLabelVars = targets.shape[1]
         self.nrObservations = inputs.shape[0]
+        
+        if targets != None:
+            self.nrTargetVars = targets.shape[1]
+            if inputs.shape[0] != targets.shape[0]:
+                raise Exception("number of inputs and targets observations mismatch")
+        else:
+            self.nrTargetVars = 0
         
     def get_observation(self, nr):
         '''
@@ -33,7 +40,10 @@ class NumericalDataSet(AbstractDataSet):
         @rtype: tuple (2dim-ndarray, 2dim-ndarray) 
         '''
         inputArr = np.array([self.inputs[nr, :]])
-        targetArr = np.array([self.targets[nr, :]])
+        if self.targets != None:
+            targetArr = np.array([self.targets[nr, :]])
+        else:
+            targetArr = None
         return inputArr, targetArr
     
     def gen_observations(self):
