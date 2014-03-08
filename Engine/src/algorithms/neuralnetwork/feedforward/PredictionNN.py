@@ -5,7 +5,9 @@ Created on Feb 4, 2014
 '''
 from algorithms.AbstractAlgorithm import AbstractAlgorithm
 import numpy as np 
+import utils.numpyutils as nputils
 import sys
+import datahandler.numerical.NumericalDataSet
 
 class PredictionNN(AbstractAlgorithm):
     '''
@@ -40,14 +42,27 @@ class PredictionNN(AbstractAlgorithm):
         #backprop
         pass
 
-    # TODO: predict
-    def predict(self, _dataSet):
+    def predict(self, dataSet):
         '''
-        Predicts targets for given dataset.inputs
+        Predicts targets for given dataset
+        @param _dataSet: data Set inheriting AbstractDataSet
+        @return: outputs from the feed forward on each row 
+        @rtype: list of numpy.ndarray (nr_obs * nr_output_neurons)
         '''
-        #feedforward
-        pass
-    
+        predictions = [];
+        # loop through dataset
+        for observation, _ in dataSet.gen_observations():
+            # make sure it numpy array
+            inputArr = np.array(observation) 
+            # feedforward
+            activations = self.feedforward(inputArr)
+            # extract output
+            output = activations[len(activations)-1]
+            
+            predictions.append(output)
+        
+        return predictions
+        
     def set_params(self, parameters):
         '''Set parameters of predefined model(shape of parameters already specified)
         @param parameters: array of np.array
@@ -58,6 +73,37 @@ class PredictionNN(AbstractAlgorithm):
                 raise Exception("overwriting parameters have not the same shape as the model (weight Matrix) " + str(wIndex) + ".\n        model: " + str(self.weightsArr[wIndex].shape) + "\n  overwriting: " + str(parameters[wIndex].shape))
             self.weightsArr[wIndex] = parameters[wIndex]
         
-    # TODO: feedforward
+    def feedforward(self, inputVec):
+        '''
+        feed inputs forward through net.
+        @param: inputVec nparray of inputs. Size defined by input layer. Row vector shape = (1,x) hint: np.array([[1,2,3]])
+        @return: activations for each neuron.
+        @rtype: array of np.Arrays(1dim), for each layer one (weight layers + 1)
+        @raise exception: if given input size doesn't match with input layer
+        '''
+        
+        if (inputVec.shape != (1, self.arrLayerSizes[0])):
+            raise Exception("Invalid inputvector shape. (1,"+str(self.arrLayerSizes[0])+") expected, got " + str(inputVec.shape))
+        
+        activations = [];
+        
+        activations.append(inputVec)
+        currActivations = nputils.addOneToVec(inputVec)
+        
+        # feed forward through network
+        for i in range(len(self.weightsArr)):
+            # weighted sum for each neuron
+            currActivations = np.dot(currActivations, self.weightsArr[i])
+            # activation function is a logistic unit, except last layer
+            if i != len(self.weightsArr)-1:
+                currActivations = nputils.sigmoidNPArray(currActivations)
+            # TODO: bias activations also in activations array?
+            activations.append(currActivations)
+            # add bias to outputs
+            currActivations = nputils.addOneToVec(currActivations)
+            
+        return activations
+        
+    
     # TODO: backprop
 

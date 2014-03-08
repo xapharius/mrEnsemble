@@ -1,19 +1,24 @@
 '''
 Created on Feb 24, 2014
 
-@author: Mihai
+@author: xapharius
 '''
 import unittest
 from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN
 from numpy.ma.testutils import assert_equal
 import numpy as np
 import sys
+import utils.numpyutils as nputils
+from datahandler.numerical.NumericalDataSet import NumericalDataSet
 
 
-class PredictionNNTest(unittest.TestCase):
+class Test(unittest.TestCase):
 
-    # integrity test for class members
-    def test_init1(self):
+    def test_constructor_medium_nn(self):
+        '''
+        Testing if members initialized correctly.
+        3 - layer NN
+        '''
         layerSizes = [3,2,1]
         NN = PredictionNN(layerSizes)
         # n layers -> n - 1 weight matrices
@@ -22,7 +27,11 @@ class PredictionNNTest(unittest.TestCase):
         for i in range(len(layerSizes) - 1):
             assert_equal(NN.weightsArr[i].shape, (layerSizes[i] + 1, layerSizes[i+1]), "weight Matrix size not equal")
     
-    def test_init2(self):   
+    def test_constructor_small_nn(self):
+        '''
+        Testing if members initialized correctly.
+        3 - layer NN
+        '''  
         layerSizes = [2]
         NN = PredictionNN(layerSizes)
         # n layers -> n - 1 weight matrices
@@ -31,7 +40,11 @@ class PredictionNNTest(unittest.TestCase):
         for i in range(len(layerSizes) - 1):
             assert_equal(NN.weightsArr[i].shape, (layerSizes[i] + 1, layerSizes[i+1]), "weight Matrix size not equal")
             
-    def test_init3(self):
+    def test_constructor_big_nn(self):
+        '''
+        Testing if members initialized correctly.
+        9 - layer NN
+        ''' 
         layerSizes = [1,2,3,4,5,6,7,8,9]
         NN = PredictionNN(layerSizes)
         # n layers -> n - 1 weight matrices
@@ -58,15 +71,29 @@ class PredictionNNTest(unittest.TestCase):
         parameters.append(np.ones((2,1)))
         try:
             NN.set_params(parameters)
-            self.fail("no exception thrown")
-        except: 
+        except Exception, e: 
             expected_errmsg = "overwriting parameters have not the same shape as the model"
-            errmsg = str(sys.exc_info()[1])
-            assert(errmsg.startswith(expected_errmsg))
-        
+            assert(e.message.startswith(expected_errmsg))
+        else:
+            self.fail("no exception thrown")
     
     def test_feedforward(self):
-        pass
+        '''
+        test feed forward for sample input. activations should coincide with calculated values
+        '''
+        layerSizes = [2,2,1]
+        nn = PredictionNN(layerSizes)
+        
+        parameters = [];
+        parameters.append(np.ones((3,2)))
+        parameters.append(np.ones((3,1)))
+        nn.set_params(parameters)
+        
+        inputVec = np.array([[2,2]])
+        activations = nn.feedforward(inputVec)
+        assert_equal(activations[0], np.array([[2,2]]), "input activations wrong")
+        assert_equal(activations[1], np.array([[0.9933071490757153, 0.9933071490757153]]), "hidden activations wrong")
+        assert_equal(activations[2], np.array([[2.9866142981514305]]), "output activations wrong")
     
     def test_backprop(self):
         pass
@@ -75,9 +102,34 @@ class PredictionNNTest(unittest.TestCase):
         pass
     
     def test_predict(self):
-        pass
-    
-    
+        '''
+        Test prediction for dataset. Returns a list of np.arrays.
+        '''
+        # defining model
+        layerSizes = [2,2,1]
+        nn = PredictionNN(layerSizes)
+        
+        # setting up nn
+        parameters = [];
+        parameters.append(np.ones((3,2)))
+        parameters.append(np.ones((3,1)))
+        nn.set_params(parameters)
+        
+        # preparing input NumericalDataSet
+        inputSet = np.array([[2,2]])
+        inputVec = np.array([[2,2]])
+        nrObs = 10
+        for _ in range(nrObs-1):
+            inputSet = np.vstack((inputSet,inputVec))
+        dataSet = NumericalDataSet(inputSet, None)
+        
+        # run function
+        predictions = nn.predict(dataSet)
+        
+        # check nr of observations
+        self.assertEqual(len(predictions), nrObs, "number of observations mismatch")
+        for prediction in predictions:
+            assert_equal(prediction, np.array([[2.9866142981514305]]), "wrong output")
 
 
 if __name__ == "__main__":
