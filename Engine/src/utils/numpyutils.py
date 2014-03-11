@@ -40,9 +40,29 @@ def sigmoidScalar(x):
 
 def sigmoidNPArray(npArr):
     '''
-    @param x: scalar
+    @param npArr: np.ndarray
     @return: sigmoid of x
-    @rtype: scalar
+    @rtype: np.ndarray
     '''
     func = np.vectorize(sigmoidScalar)
+    return func(npArr)
+
+def sigmoidDerivScalar(x):
+    '''
+    Given a scalar (e.g the weighted sum) compute the derivative of its sigmoid
+    @param x: scalar
+    @return: derivative of sigmoid of x
+    @rtype: scalar
+    '''
+    sigX = sigmoidScalar(x)
+    return sigX * (1- sigX)
+
+def sigmoidDerivNPArray(npArr):
+    '''
+    Given a np.array (e.g the weighted sums) compute the derivative of its sigmoids
+    @param npArr: np.ndarray
+    @return: derivative of sigmoid of x
+    @rtype: np.ndarray
+    '''
+    func = np.vectorize(sigmoidDerivScalar)
     return func(npArr)
