@@ -96,10 +96,41 @@ class Test(unittest.TestCase):
         assert_equal(activations[2], np.array([[2.9866142981514305]]), "output activations wrong")
     
     def test_backprop(self):
-        pass
+        layerSizes = [1,1,2,1]
+        nn = PredictionNN(layerSizes)
+        parameters = [];
+        parameters.append(np.ones((2,1)))
+        parameters.append(np.ones((2,2)))
+        parameters.append(np.ones((3,1)))
+        nn.set_params(parameters)
+        
+        inputVec = np.array([[1]])
+        activations = nn.feedforward(inputVec)
+        nn.backpropagation(activations, np.array([0.5]))
+        
+        # value computed through backpropagation by hand
+        assert_equal(round(nn.weightsArr[0][0,0], 7), 0.9730573)
     
     def test_train(self):
-        pass
+        '''
+        Testing only execution of train function
+        '''
+        layerSizes = [2,2,1]
+        nn = PredictionNN(layerSizes)
+        
+        # preparing input NumericalDataSet
+        inputSet = np.array([[2,2]])
+        inputVec = np.array([[2,2]])
+        targetSet = np.array([[1]])
+        targetVec = np.array([[1]])
+        nrObs = 10
+        for _ in range(nrObs-1):
+            inputSet = np.vstack((inputSet,inputVec))
+            targetSet = np.vstack((targetSet,targetVec))
+        dataSet = NumericalDataSet(inputSet, targetSet)
+        nn.train(dataSet)
+        
+        
     
     def test_predict(self):
         '''
