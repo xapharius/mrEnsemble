@@ -45,8 +45,6 @@ class numpyutilsTest(unittest.TestCase):
             errmsg = str(sys.exc_info()[1])
             assert(errmsg.startswith(expected_errmsg))
             
-
-
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

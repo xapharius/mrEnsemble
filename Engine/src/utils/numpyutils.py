@@ -66,3 +66,16 @@ def sigmoidDerivNPArray(npArr):
     '''
     func = np.vectorize(sigmoidDerivScalar)
     return func(npArr)
+
+def expNPArrayList(lst, power):
+    '''
+    Raise elements of a list (of np.arrays - elementwise) to power
+    @param lst: list of np.arrays
+    @param power: scalar, to which power the elements should be raised
+    @rtype list of np.arrays
+    '''
+    retList = []
+    for nparr in lst:
+        retList.append(nparr ** power)
+     
+    return retList
