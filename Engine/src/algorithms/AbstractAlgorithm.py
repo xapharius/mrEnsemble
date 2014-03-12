@@ -25,6 +25,7 @@ class AbstractAlgorithm(object):
     def predict(self, dataSet):
         '''
         @param dataSet: AbstractDataSet
+        @rtype: list of np.arrays
         '''
     
     @abstractmethod

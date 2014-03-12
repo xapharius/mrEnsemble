@@ -19,7 +19,7 @@ class LinearRegression(AbstractAlgorithm):
         :param nrInputs: number of latent variables Liner Model should have
         '''
         # add bias parameter
-        self.params = np.random.rand(_nrInputVars+1,)
+        self.params = np.random.rand(1,_nrInputVars+1)
         self.nrParams = self.params.size
 
     def train(self, _dataSet):
@@ -31,7 +31,8 @@ class LinearRegression(AbstractAlgorithm):
         inputs = self.addOnes(_dataSet.inputs)
         pseudoInv = np.linalg.pinv(np.dot(inputs.T, inputs))
         part2 = np.dot(inputs.T, _dataSet.targets)
-        self.params = np.dot(pseudoInv, part2)
+        self.params = np.dot(pseudoInv, part2).T
+        print self.params.shape
         
     def addOnes(self, _matrix):
         '''
@@ -44,16 +45,23 @@ class LinearRegression(AbstractAlgorithm):
     def predict(self, _dataSet):
         '''
         Predicts targets for given dataset.inputs
+        @return: predictions
+        @rtype: list of np.arrays
         '''
         inputs = self.addOnes(_dataSet.inputs)
-        return np.dot(inputs, self.params.T)
+        resMat = np.dot(inputs, self.params.T)
+        retArr = []
+        for i in range(resMat.shape[0]):
+            retArr.append([np.array(resMat[i])])
+        return retArr
+            
     
     def set_params(self, parameters):
-        sys.stderr.write("set params: " + str(parameters) + "\n")
+        #sys.stderr.write("set params: " + str(parameters) + "\n")
         '''Set parameters of predefined model(shape of parameters already specified)
         @param parameters: np.array
         @raise exception: if given parameters don't match in shape with model
         '''
-        if (1, self.nrParams) != parameters.shape:
+        if self.params.shape != parameters.shape:
             raise Exception("overwriting parameters have not the same shape as the model.\n        model: " + str((self.nrParams,)) + "\n  overwriting: " + str(parameters.shape))
         self.params = parameters

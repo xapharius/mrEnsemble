@@ -35,15 +35,15 @@ class Test(unittest.TestCase):
         linRegArr = []
         
         linReg1 = linRegFactory.get_instance()
-        linReg1.set_params(np.array([1,1,1]))
+        linReg1.set_params(np.array([[1,1,1]]))
         linRegArr.append(linReg1)
         
         linReg2 = linRegFactory.get_instance()
-        linReg2.set_params(np.array([3,3,3]))
+        linReg2.set_params(np.array([[3,3,3]]))
         linRegArr.append(linReg2)
         
         superReg = linRegFactory.aggregate(linRegArr)
-        assert_array_equal(superReg.params, np.array([2,2,2]))
+        assert_array_equal(superReg.params, np.array([[2,2,2]]))
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

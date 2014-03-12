@@ -44,24 +44,23 @@ class LinearRegressionTest(unittest.TestCase):
         
     def test_predictExecutes(self):
         linreg = LinearRegression(self.dataSet.nrInputVars)
-        linreg.predict(self.dataSet)
+        predictions = linreg.predict(self.dataSet)
+        assert len(predictions) == self.dataSet.nrObservations
         
-    # TODO: to be run   
     def test_set_params_positive(self):
         nrInputVars = 3;
         linreg = LinearRegression(nrInputVars)
         try:
-            linreg.set_params([1,2,3,4])
+            linreg.set_params(np.array([[1,2,3,4]]))
         except:
             self.fail("overriding params should be fine");
     
-    # TODO: to be run    
     def test_set_params_negative(self):
         nrInputVars = 3;
         linreg = LinearRegression(nrInputVars)
         try:
-            linreg.set_params([1,2,3])
-            self.fail("overriding params are not fine, but no exception thrown");
+            linreg.set_params(np.array([[1,2,3]]))
+            self.fail("no exception thrown");
         except:
             expected_errmsg = "overwriting parameters have not the same shape as the model"
             errmsg = str(sys.exc_info()[1])
