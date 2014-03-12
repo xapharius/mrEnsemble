@@ -16,8 +16,8 @@ class NumericalDataSet(AbstractDataSet):
     def __init__(self, inputs, targets = None):
         '''
         Constructor
-        @param inputs: numpy.ndarray (nr_obs * nr_vars)
-        @param targets: numpy.ndarray (nr_obs * nr_vars)
+        @param inputs: 2-dim numpy.ndarray (nr_obs * nr_vars)
+        @param targets: 2-dim numpy.ndarray (nr_obs * nr_vars)
         @raise exception: if targets not null then they must have same nr of observations 
         '''
         self.inputs = inputs
@@ -55,3 +55,4 @@ class NumericalDataSet(AbstractDataSet):
         for i in range(self.nrObservations):
             inputArr, targetArr = self.get_observation(i)
             yield inputArr, targetArr
+            
