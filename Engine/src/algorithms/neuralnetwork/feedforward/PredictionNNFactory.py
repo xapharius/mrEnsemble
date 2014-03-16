@@ -52,11 +52,25 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
         
         return aggrNN
     
-    # TODO: serialize PredictionNN
-    def serialize(self, alg_instance):
-        pass
+    def encode(self, alg_instance):
+        # bring nparrays to list type (to be json encodable)
+        weightsArr = []
+        for npArr in alg_instance.weightsArr:
+            weightsArr.append(npArr.tolist())
+        return weightsArr
     
-    # TODO: deserialize PredictionNN
-    def deserialize(self, serialized):
-        pass
+    def decode(self, encoded):
+        alg_list = []
+        # JSONProtocol sends them as key-value tuple
+        for _, alg_weightsArr in encoded:
+            # turn each element of the list(list) into an npArray
+            npWeightsArr = []
+            for arr in alg_weightsArr:
+                npWeightsArr.append(np.array(arr))
+            # predictinNN can be created since we have a list of npArrays
+            newPredictionNN = PredictionNN(self.arrLayerSizes)
+            newPredictionNN.set_params(npWeightsArr)
+            alg_list.append(newPredictionNN)
+        return alg_list
+            
         

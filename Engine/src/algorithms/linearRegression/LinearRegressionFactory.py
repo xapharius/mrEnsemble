@@ -45,16 +45,19 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         
         return aggrLinReg
     
-    def serialize(self, alg_instance):
+    def encode(self, alg_instance):
         return alg_instance.params.tolist()
     
-    def deserialize(self, serialized):
+    def decode(self, encoded):
         deserialized = []
-        for s in serialized:
+        # JSONProtocol sends them as key-value tuple
+        for _, s in encoded:
             # observations are row vectors
-            params = np.array(s).T
+            params = np.array(s)
+            # create new algorithm object with the parameters that have been serialized
             lin_reg = LinearRegression(self.nrInputVars);
             lin_reg.set_params(params)
+            # append to list of algorithm objetcs
             deserialized.append(lin_reg)
         return deserialized
         

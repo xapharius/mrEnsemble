@@ -7,7 +7,7 @@ import unittest
 import numpy as np
 from algorithms.linearRegression import LinearRegressionFactory
 from algorithms.linearRegression import LinearRegression
-
+from mrjob.protocol import JSONProtocol
 from numpy.testing.utils import assert_equal
 from numpy.ma.testutils import assert_array_equal
 
@@ -44,6 +44,28 @@ class Test(unittest.TestCase):
         
         superReg = linRegFactory.aggregate(linRegArr)
         assert_array_equal(superReg.params, np.array([[2,2,2]]))
+        
+    def test_encode(self):
+        linRegFactory = LinearRegressionFactory(2)
+        linReg = linRegFactory.get_instance()
+        encoded = linRegFactory.encode(linReg)
+    
+        protocol = JSONProtocol()    
+        protocol.write("test_encode", encoded)
+        
+    def test_decode(self):
+        linRegFactory = LinearRegressionFactory(2)
+        linReg = linRegFactory.get_instance()
+        obj_encoded = linRegFactory.encode(linReg)
+    
+        protocol = JSONProtocol()    
+        json_encoded = protocol.write("test_decode", obj_encoded)
+        obj_encoded = protocol.read(json_encoded)
+        
+        linRegArr = linRegFactory.decode([obj_encoded])
+        assert type(linRegArr) == list, "decoded not as a list"
+        assert type(linRegArr[0]) == LinearRegression, "decoded not as LinearRegression"
+    
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

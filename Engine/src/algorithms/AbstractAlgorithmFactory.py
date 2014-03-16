@@ -29,20 +29,21 @@ class AbstractAlgorithmFactory(object):
         pass
     
     @abstractmethod
-    def serialize(self, alg_instance):
+    def encode(self, alg_instance):
         '''
-        Serialize an existing algorithm instance. Usually this means creating a
+        Encode an existing algorithm instance. Usually this means creating a
         representation of the instance's parameters/weights.
         :param alg_instance algorithm instance that was created by this factory
-        and should be serialized
+        and should be encoded
         '''
         pass
     
     @abstractmethod
-    def deserialize(self, serialized):
+    def decode(self, encoded):
         '''
-        Creates a new algorithm instance that represents the given serialized
-        algorithm object created through the method 'serialize'.
+        Creates a list of new algorithm instances, that represent the given encoded
+        algorithm objects created through the method 'encode'.
+        @param encoded: List of encoded algorithm objects
         '''
         pass
 

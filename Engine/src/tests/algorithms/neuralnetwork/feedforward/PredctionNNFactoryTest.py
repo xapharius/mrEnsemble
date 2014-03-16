@@ -1,7 +1,7 @@
 '''
 Created on Feb 24, 2014
 
-@author: Mihai
+@author: xapharius
 '''
 import unittest
 from algorithms.neuralnetwork.feedforward.PredictionNNFactory import PredictionNNFactory
@@ -9,6 +9,7 @@ from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN
 from numpy.ma.testutils import assert_equal
 from numpy.ma.testutils import assert_array_equal
 import numpy as np
+from mrjob.protocol import JSONProtocol
 
 
 class Test(unittest.TestCase):
@@ -52,12 +53,37 @@ class Test(unittest.TestCase):
         assert_array_equal(superNN.weightsArr[0], 2 * np.ones((4,2)))
         assert_array_equal(superNN.weightsArr[1], 2 * np.ones((3,1)))
     
-    def test_serialize(self):
-        pass
+    def test_encode(self):
+        '''
+        Test whether algorithm can be json encoded (used as mrjob internal protocol)
+        '''
+        layerSizes = [3,2,1]
+        nnFactory = PredictionNNFactory(layerSizes)
+        nn = nnFactory.get_instance()
+        # encode
+        obj_encoded = nnFactory.encode(nn)
+        # call json protocol
+        protocol = JSONProtocol()    
+        protocol.write("test_decode", obj_encoded)
+        
+    def test_decode(self):
+        '''
+        Test whether algorithm can be json encoded (used as mrjob internal protocol)
+        '''
+        layerSizes = [3,2,1]
+        nnFactory = PredictionNNFactory(layerSizes)
+        nn = nnFactory.get_instance()
+        # encode
+        obj_encoded = nnFactory.encode(nn)
+        # call json protocol
+        protocol = JSONProtocol()    
+        json_encoded = protocol.write("test_decode", obj_encoded)
+        obj_encoded = protocol.read(json_encoded)
+        
+        nnArr = nnFactory.decode([obj_encoded])
+        assert type(nnArr) == list, "decoded not as a list"
+        assert type(nnArr[0]) == PredictionNN, "decoded not as LinearRegression"
     
-    def test_deserialize(self):
-        pass
-
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
