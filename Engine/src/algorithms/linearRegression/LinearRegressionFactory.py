@@ -44,10 +44,10 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
         aggrLinReg.set_params(aggrLinRegParams)
         
         return aggrLinReg
-    
+
     def serialize(self, alg_instance):
         return alg_instance.params.tolist()
-    
+
     def deserialize(self, serialized):
         deserialized = []
         for s in serialized:
@@ -57,4 +57,3 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
             lin_reg.set_params(params)
             deserialized.append(lin_reg)
         return deserialized
-        

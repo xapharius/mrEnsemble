@@ -1,16 +1,14 @@
 import mrjob
 from mrjob.job import MRJob
 
-from algorithms.linearRegression.LinearRegressionFactory import \
-    LinearRegressionFactory
-from datahandler.numerical.NumericalDataHandler import NumericalDataHandler
 import reader
 import sys
+import pickle
 
 
 class EngineJob(MRJob):
     '''
-    classdocs
+    M/R Job for the actual training of an algorithm instance.
     '''
     
     INPUT_PROTOCOL = reader.NLineCSVInputProtocol
@@ -18,48 +16,58 @@ class EngineJob(MRJob):
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
     HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NLineFileInputFormat'
     JOBCONF = { 'hadoopml.fileinput.linespermap': 200 }
- 
-    def init(self, factory, data_handler):
-        self.factory = factory
-        self.data_handler = data_handler
+
+
+    def init(self):
+        # load data handler and algorithm factory
+        self.factory = self._load_object('alg_factory.pkl')
+        self.data_handler = self._load_object('data_handler.pkl')
+        self.data_conf = self.data_handler.get_configuration()
         
         # set configuration
-        if self.data_handler.get_configuration():
-            self.conf = data_handler.get_configuration()
-            if self.conf.get_input_protocol():
-                self.INPUT_PROTOCOL = self.conf.get_input_protocol()
-            if self.conf.get_internal_protocol():
-                self.INTERNAL_PROTOCOL = self.conf.get_internal_protocol()
-            if self.conf.get_output_protocol():
-                self.OUTPUT_PROTOCOL = self.conf.get_output_protocol()
-            if self.conf.get_job_conf():
-                self.JOBCONF = self.conf.get_job_conf() 
-    
+        if self.data_conf:
+            if self.data_conf.get_input_protocol():
+                self.INPUT_PROTOCOL = self.data_conf.get_input_protocol()
+            if self.data_conf.get_internal_protocol():
+                self.INTERNAL_PROTOCOL = self.data_conf.get_internal_protocol()
+            if self.data_conf.get_output_protocol():
+                self.OUTPUT_PROTOCOL = self.data_conf.get_output_protocol()
+            if self.data_conf.get_job_conf():
+                self.JOBCONF = self.data_conf.get_job_conf() 
+
     def mapper(self, key, value):
-        self.init(LinearRegressionFactory(11), NumericalDataHandler(11, 1))
+        # create new algorithm instance
         alg = self.factory.get_instance()
-        data_set = self.data_handler.get_DataProcessor(value).get_data()
+        # create normalized data set
+        data_processor = self.data_handler.get_data_processor()
+        data_processor.set_data(value)
+        data_processor.normalize_data(self.data_handler.get_statistics())
+        data_set = data_processor.get_data_set()
+        # train the model
         alg.train(data_set)
-        # TODO: serialize algorithm (parameters of course)
+        # prepare algorithm for transport
         serialized = self.factory.serialize(alg)
         yield 0, serialized
-    
+
     def reducer(self, key, values):
-        # TODO: value should be np.array of type LinearRegression
-        # TODO: serialize algorithm (parameters of course)
-        
         # 'values' is a generator, "convert" to list
         values_list = list(values)
         sys.stderr.write("reducer: \n  key: " + str(key) + "\n  value: " + str(values_list) + "\n")
-        self.init(LinearRegressionFactory(11), NumericalDataHandler(11, 1))
         alg = self.factory.aggregate(self.factory.deserialize(values_list))
         yield 0, self.factory.serialize(alg)
 
     def steps(self):
         return [
-            self.mr(mapper=self.mapper,
-                    reducer=self.reducer)]
+            self.mr( mapper_init  = self.init,
+                     mapper       = self.mapper,
+                     reducer_init = self.init,
+                     reducer      = self.reducer)]
+
+    def _load_object(self, file_name):
+        pkl_file = open(file_name, 'rb')
+        obj = pickle.load(pkl_file)
+        pkl_file.close()
+        return obj
 
 if __name__ == '__main__':
     EngineJob.run()
-    
