@@ -15,27 +15,26 @@ class AbstractDataProcessor(object):
     '''
     __metaclass__ = ABCMeta
     
-    def __init__(self, rawData):
+    def __init__(self):
         '''
         Constructor
-        @param rawData: numpy.ndarray 
         '''
-        self.rawData = rawData;
-    
+
+    def set_data(self, raw_data):
+        self.raw_data = raw_data
+
     @abstractmethod
-    def normalize_data(self):
+    def normalize_data(self, stats):
         '''
-        Normalizes Local Data using the statistics from the preprocessor, passed through the Engine's Job Configuration
+        Normalizes Local Data using the statistics from the preprocessor.
         '''
         pass
-    
+
     @abstractmethod
-    def get_data(self):
+    def get_data_set(self):
         '''
         Package and return processed data
         @return: Dataclass specific DataSet
         '''
         pass
-        
-    
-        
+

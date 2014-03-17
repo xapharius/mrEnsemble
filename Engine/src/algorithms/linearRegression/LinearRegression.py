@@ -24,7 +24,7 @@ class LinearRegression(AbstractAlgorithm):
 
     def train(self, _dataSet):
         '''
-        Trains Model for given dataset
+        Trains Model for given dataset (NumericalDataSet)
         Transactions for both inputs and targets should be as rows
         '''
         # add column of ones to dataset

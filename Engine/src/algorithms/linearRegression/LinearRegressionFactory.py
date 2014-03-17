@@ -60,4 +60,3 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
             # append to list of algorithm objetcs
             deserialized.append(lin_reg)
         return deserialized
-        

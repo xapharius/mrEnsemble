@@ -21,16 +21,16 @@ class AbstractDataHandler(object):
         pass
         
     @abstractmethod
-    def get_PreProcessor(self):
+    def get_pre_processor(self):
         '''
         @return: Creates a PreProcessor for DataHandler's Data Class
         '''
         pass
     
     @abstractmethod
-    def get_DataProcessor(self, rawData):
+    def get_data_processor(self):
         '''
-        @return: Creates a DataProcessor for DataHandler's Data Class and associates it rawData.
+        @return: Creates a DataProcessor for DataHandler's Data Class.
         '''
         pass
     
@@ -41,3 +41,17 @@ class AbstractDataHandler(object):
         @rtype: AbstractConfiguration
         '''
         pass
+    
+    def set_statistics(self, stats):
+        '''
+        Set results of pre-processing.
+        @param stats: Statistics calculated in pre-processing
+        '''
+        self.stats = stats
+    
+    def get_statistics(self):
+        '''
+        @return: Statistics that were calculated in the pre-processing step.
+        @rtype: Depends on pre-processing job implementation
+        '''
+        return self.stats
