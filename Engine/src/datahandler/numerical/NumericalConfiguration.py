@@ -4,7 +4,7 @@ Created on Jan 15, 2014
 @author: Simon
 '''
 from datahandler.AbstractConfiguration import AbstractConfiguration
-import reader
+import protocol
 import mrjob.protocol
 
 class NumericalConfiguration(AbstractConfiguration):
@@ -12,7 +12,7 @@ class NumericalConfiguration(AbstractConfiguration):
     classdocs
     '''
 
-    INPUT_PROTOCOL = reader.NLineCSVInputProtocol
+    INPUT_PROTOCOL = protocol.NLineCSVInputProtocol
     INTERNAL_PROTOCOL = mrjob.protocol.JSONProtocol
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
     HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NLineFileInputFormat'

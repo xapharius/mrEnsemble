@@ -46,20 +46,20 @@ class Test(unittest.TestCase):
         assert_array_equal(superReg.params, np.array([[2,2,2]]))
         
     def test_encode(self):
-        linRegFactory = LinearRegressionFactory(2)
+        linRegFactory = LinearRegressionFactory(11)
         linReg = linRegFactory.get_instance()
         encoded = linRegFactory.encode(linReg)
     
-        protocol = JSONProtocol()    
-        protocol.write("test_encode", encoded)
+        protocol = JSONProtocol()
+        protocol.write(0, encoded)
         
     def test_decode(self):
-        linRegFactory = LinearRegressionFactory(2)
+        linRegFactory = LinearRegressionFactory(11)
         linReg = linRegFactory.get_instance()
         obj_encoded = linRegFactory.encode(linReg)
     
-        protocol = JSONProtocol()    
-        json_encoded = protocol.write("test_decode", obj_encoded)
+        protocol = JSONProtocol()
+        json_encoded = protocol.write(0, obj_encoded)
         obj_encoded = protocol.read(json_encoded)
         
         linRegArr = linRegFactory.decode([obj_encoded])

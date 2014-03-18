@@ -1,7 +1,7 @@
 import mrjob
 from mrjob.job import MRJob
 
-import reader
+import protocol
 import sys
 import pickle
 
@@ -11,7 +11,7 @@ class EngineJob(MRJob):
     M/R Job for the actual training of an algorithm instance.
     '''
     
-    INPUT_PROTOCOL = reader.NLineCSVInputProtocol
+    INPUT_PROTOCOL = protocol.NLineCSVInputProtocol
     INTERNAL_PROTOCOL = mrjob.protocol.JSONProtocol
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
     HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NLineFileInputFormat'
@@ -45,8 +45,10 @@ class EngineJob(MRJob):
         data_set = data_processor.get_data_set()
         # train the model
         alg.train(data_set)
+        sys.stderr.write('alg params: ' + str(alg.params) + '\n')
         # prepare algorithm for transport
         serialized = self.factory.encode(alg)
+        sys.stderr.write('serialized: ' + str(serialized) + '\n')
         yield 0, serialized
 
     def reducer(self, key, values):
@@ -61,7 +63,7 @@ class EngineJob(MRJob):
             self.mr( mapper_init  = self.init,
                      mapper       = self.mapper,
                      reducer_init = self.init,
-                     reducer      = self.reducer)]
+                     reducer      = self.reducer )]
 
     def _load_object(self, file_name):
         pkl_file = open(file_name, 'rb')

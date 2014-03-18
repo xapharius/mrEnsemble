@@ -5,7 +5,7 @@ Created on Mar 12, 2014
 import mrjob
 from mrjob.job import MRJob
 
-import reader
+import protocol
 import pickle
 import sys
 
@@ -16,7 +16,7 @@ class PreProcessorJob(MRJob):
     '''
     
     # defaults
-    INPUT_PROTOCOL = reader.NLineCSVInputProtocol
+    INPUT_PROTOCOL = protocol.NLineCSVInputProtocol
     INTERNAL_PROTOCOL = mrjob.protocol.JSONProtocol
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
     HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NLineFileInputFormat'

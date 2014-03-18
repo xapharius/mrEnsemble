@@ -1,5 +1,5 @@
 import unittest
-from reader.NLineCSVInputProtocol import NLineCSVInputProtocol
+from protocol.NLineCSVInputProtocol import NLineCSVInputProtocol
 import numpy as np
 
 class CSVInputProtocolTest(unittest.TestCase):
