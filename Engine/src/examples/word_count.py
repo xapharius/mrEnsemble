@@ -1,11 +1,11 @@
 from mrjob.job import MRJob
 import mrjob
 import sys
-import reader
+import protocol
 
 class MRWordCount(MRJob):
 
-    INPUT_PROTOCOL = reader.NLineInputProtocol
+    INPUT_PROTOCOL = protocol.NLineInputProtocol
     INTERNAL_PROTOCOL = mrjob.protocol.JSONProtocol
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
     HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NLineFileInputFormat'

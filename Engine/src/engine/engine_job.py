@@ -33,7 +33,10 @@ class EngineJob(MRJob):
             if self.data_conf.get_output_protocol():
                 self.OUTPUT_PROTOCOL = self.data_conf.get_output_protocol()
             if self.data_conf.get_job_conf():
-                self.JOBCONF = self.data_conf.get_job_conf() 
+                self.JOBCONF = self.data_conf.get_job_conf()
+        sys.stderr.write('input:    ' + str(self.INPUT_PROTOCOL) + '\n')
+        sys.stderr.write('internal: ' + str(self.INTERNAL_PROTOCOL) + '\n')
+        sys.stderr.write('output:   ' + str(self.OUTPUT_PROTOCOL) + '\n')
 
     def mapper(self, key, value):
         # create new algorithm instance
@@ -49,14 +52,14 @@ class EngineJob(MRJob):
         # prepare algorithm for transport
         serialized = self.factory.encode(alg)
         sys.stderr.write('serialized: ' + str(serialized) + '\n')
-        yield 0, serialized
+        yield 'alg', serialized
 
     def reducer(self, key, values):
         # 'values' is a generator, "convert" to list
         values_list = list(values)
         sys.stderr.write("reducer: \n  key: " + str(key) + "\n  value: " + str(values_list) + "\n")
         alg = self.factory.aggregate(self.factory.decode(values_list))
-        yield 0, self.factory.encode(alg)
+        yield 'alg', self.factory.encode(alg)
 
     def steps(self):
         return [

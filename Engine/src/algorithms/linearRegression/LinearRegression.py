@@ -5,7 +5,6 @@ Created on Dec 4, 2013
 '''
 from algorithms.AbstractAlgorithm import AbstractAlgorithm
 import numpy as np 
-import sys
 
 class LinearRegression(AbstractAlgorithm):
     '''
@@ -32,7 +31,6 @@ class LinearRegression(AbstractAlgorithm):
         pseudoInv = np.linalg.pinv(np.dot(inputs.T, inputs))
         part2 = np.dot(inputs.T, _dataSet.targets)
         self.params = np.dot(pseudoInv, part2).T
-        print self.params.shape
         
     def addOnes(self, _matrix):
         '''
@@ -63,5 +61,5 @@ class LinearRegression(AbstractAlgorithm):
         @raise exception: if given parameters don't match in shape with model
         '''
         if self.params.shape != parameters.shape:
-            raise Exception("overwriting parameters have not the same shape as the model.\n        model: " + self.params.shape + "\n  overwriting: " + str(parameters.shape))
+            raise Exception("overwriting parameters have not the same shape as the model.\n        model: " + str(self.params.shape) + "\n  overwriting: " + str(parameters.shape))
         self.params = parameters

@@ -77,9 +77,7 @@ class Engine(MRJob):
 
 
         # ----------- Validation ----------------------------------------------
-        print(trained_alg)
-        # TODO: deserialize raises exception for linear regression
-        return self.alg_factory.decode(trained_alg)
+        return self.alg_factory.decode([trained_alg])[0]
 
     def _save_object(self, file_name, obj):
         output = open(file_name, 'wb')

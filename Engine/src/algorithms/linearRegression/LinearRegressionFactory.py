@@ -51,7 +51,7 @@ class LinearRegressionFactory(AbstractAlgorithmFactory):
     def decode(self, encoded):
         deserialized = []
         # JSONProtocol sends them as key-value tuple
-        for _, s in encoded:
+        for s in encoded:
             # observations are row vectors
             params = np.array(s)
             # create new algorithm object with the parameters that have been serialized

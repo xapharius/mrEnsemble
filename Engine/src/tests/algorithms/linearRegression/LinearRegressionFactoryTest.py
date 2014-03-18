@@ -51,7 +51,7 @@ class Test(unittest.TestCase):
         encoded = linRegFactory.encode(linReg)
     
         protocol = JSONProtocol()
-        protocol.write(0, encoded)
+        print protocol.write(0, encoded)
         
     def test_decode(self):
         linRegFactory = LinearRegressionFactory(11)
@@ -62,7 +62,7 @@ class Test(unittest.TestCase):
         json_encoded = protocol.write(0, obj_encoded)
         obj_encoded = protocol.read(json_encoded)
         
-        linRegArr = linRegFactory.decode([obj_encoded])
+        linRegArr = linRegFactory.decode([obj_encoded[1]])
         assert type(linRegArr) == list, "decoded not as a list"
         assert type(linRegArr[0]) == LinearRegression, "decoded not as LinearRegression"
     
