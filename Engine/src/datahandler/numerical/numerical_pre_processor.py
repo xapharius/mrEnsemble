@@ -40,12 +40,11 @@ class NumericalPreProcessor(AbstractPreProcessor):
             else:
                 mins = np.vstack((result[self.MIN], _min))
                 maxs = np.vstack((result[self.MAX], _max))
-                means = np.vstack((result[self.MEAN], mean))
                 
                 result[self.MIN] = np.min(mins, axis=0)
                 result[self.MAX] = np.max(maxs, axis=0)
-                result[self.MEAN] = np.mean(means, axis=0)
                 result[self.VAR] = (result[self.VAR]*result[self.NUM] + var*num)/(result[self.NUM] + num) + result[self.NUM]*num*np.power((mean-result[self.MEAN])/(num+result[self.NUM]), 2)
+                result[self.MEAN] = (result[self.MEAN]*result[self.NUM] + mean*num)/(result[self.NUM] + num)
                 result[self.NUM] += num
         sys.stderr.write('aggregate result: ' + str(result) + '\n')
         result[self.MIN] = result[self.MIN].tolist()
