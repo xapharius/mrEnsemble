@@ -48,16 +48,13 @@ class EngineJob(MRJob):
         data_set = data_processor.get_data_set()
         # train the model
         alg.train(data_set)
-        sys.stderr.write('alg params: ' + str(alg.params) + '\n')
         # prepare algorithm for transport
         serialized = self.factory.encode(alg)
-        sys.stderr.write('serialized: ' + str(serialized) + '\n')
         yield 'alg', serialized
 
     def reducer(self, key, values):
         # 'values' is a generator, "convert" to list
         values_list = list(values)
-        sys.stderr.write("reducer: \n  key: " + str(key) + "\n  value: " + str(values_list) + "\n")
         alg = self.factory.aggregate(self.factory.decode(values_list))
         yield 'alg', self.factory.encode(alg)
 

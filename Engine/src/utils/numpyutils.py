@@ -5,6 +5,7 @@ Created on Mar 6, 2014
 '''
 import numpy as np
 import math
+import sys
 
 def addOneToVec(npArr):
     '''
@@ -36,7 +37,13 @@ def sigmoidScalar(x):
     @return: sigmoid of x
     @rtype: scalar
     '''
-    return 1 / (1 + math.exp(-x))
+    if x > 100:
+        sys.stderr.write("sigmoid received value greater 100: " + str(x) + "\n")
+        return 1
+    elif x < -100:
+        sys.stderr.write("sigmoid received value smaller -100: " + str(x) + "\n")
+        return 0
+    return 1. / (1. + math.exp(-x))
 
 def sigmoidNPArray(npArr):
     '''

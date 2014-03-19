@@ -6,8 +6,6 @@ Created on Feb 4, 2014
 from algorithms.AbstractAlgorithm import AbstractAlgorithm
 import numpy as np 
 import utils.numpyutils as nputils
-import datahandler.numerical.NumericalDataSet
-from algorithms.neuralnetwork import feedforward
 
 class PredictionNN(AbstractAlgorithm):
     '''
@@ -28,7 +26,8 @@ class PredictionNN(AbstractAlgorithm):
         for layer in range(len(arrLayerSizes)-1):
             # weight matrix shape is first layer * second layer
             # bias term added on first dimension
-            weights = np.random.rand(arrLayerSizes[layer]+1, arrLayerSizes[layer+1])
+            # generate random weights in the range of [-0.5, 0.5]
+            weights = np.random.rand(arrLayerSizes[layer]+1, arrLayerSizes[layer+1])- 0.5
             weightsArr.append(weights)
         
         self.weightsArr = weightsArr
@@ -113,7 +112,7 @@ class PredictionNN(AbstractAlgorithm):
     def backpropagation(self, activations, targets, learningRate = 0.5):
         '''
         Propagates errors through NN, computing the partial gradients and updating the weights
-        @param activatoins: List of np.arrays obtained from feedforward
+        @param activations: List of np.arrays obtained from feedforward
         @param targets: np.array of shape (1,output_layer_size) representing the desired output
         @param learningRate: scalar. speed at which we move down the gradient  
         '''
@@ -127,14 +126,14 @@ class PredictionNN(AbstractAlgorithm):
             # the sum over all neurons in next layer, for each neuron in current layer
             sums = np.dot(self.weightsArr[i], deltaRule[0])
             # remove last sum since it is from bias neuron. we don't need a delta for it, 
-            # since it doesnt have connecitions to the previous layer
+            # since it doesn't have connections to the previous layer
             sums = sums[:-1,:]
-            # element-wise multiply with the sigmoidal derivative for activation, 
+            # element-wise multiply with the sigmoidal derivative for activation
             deltaRule_thisLayer = self.sigDer(activations[i]).transpose() * sums
             #PREpend deltas to array  
             deltaRule = [deltaRule_thisLayer] + deltaRule
             
-        # update weights    
+        # update weights
         # weights i are between layer i and i + 1
         for i in range(self.nrLayers-1):
             # here the activations need the additional bias neuron -> addOneToVec

@@ -61,8 +61,8 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
     
     def decode(self, encoded):
         alg_list = []
-        # JSONProtocol sends them as key-value tuple
-        for _, alg_weightsArr in encoded:
+        # encode is a list of encoded algorithm instances
+        for alg_weightsArr in encoded:
             # turn each element of the list(list) into an npArray
             npWeightsArr = []
             for arr in alg_weightsArr:
