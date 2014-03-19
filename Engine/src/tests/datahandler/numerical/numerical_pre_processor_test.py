@@ -24,12 +24,12 @@ class NumericalPreProcessorTest(unittest.TestCase):
         mean = np.mean(data, axis=0)
         var = np.var(data, axis=0)
         
-        tolerance = 0.01
+        tolerance = 0.001
         self.assertTrue(result[NumericalPreProcessor.NUM] == num, 'num doesn\'t match!\nex: ' + str(num) + '\nis: ' + str(result[NumericalPreProcessor.NUM]))
-        self.assertTrue(all(result[NumericalPreProcessor.MIN] == _min), 'min doesn\'t match!\nex: ' + str(_min) + '\nis: ' + str(result[NumericalPreProcessor.MIN]))
-        self.assertTrue(all(result[NumericalPreProcessor.MAX] == _max), 'max doesn\'t match!\nex: ' + str(_max) + '\nis: ' + str(result[NumericalPreProcessor.MAX]))
-        self.assertTrue(equals_with_tolerance(result[NumericalPreProcessor.MEAN], mean, tolerance), 'mean doesn\'t match!\nex: ' + str(mean) + '\nis: ' + str(result[NumericalPreProcessor.MEAN]))
-        self.assertTrue(equals_with_tolerance(result[NumericalPreProcessor.VAR], var, tolerance), 'variance doesn\'t match!\nex: ' + str(var) + '\nis: ' + str(result[NumericalPreProcessor.VAR]))
+        self.assertTrue(all(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MIN] == _min), 'min doesn\'t match!\nex: ' + str(_min) + '\nis: ' + str(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MIN]))
+        self.assertTrue(all(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MAX] == _max), 'max doesn\'t match!\nex: ' + str(_max) + '\nis: ' + str(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MAX]))
+        self.assertTrue(equals_with_tolerance(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MEAN], mean, tolerance), 'mean doesn\'t match!\nex: ' + str(mean) + '\nis: ' + str(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MEAN]))
+        self.assertTrue(equals_with_tolerance(result[NumericalPreProcessor.DATA][NumericalPreProcessor.VAR], var, tolerance), 'variance doesn\'t match!\nex: ' + str(var) + '\nis: ' + str(result[NumericalPreProcessor.DATA][NumericalPreProcessor.VAR]))
 
     def testAggregation(self):
         pre_processor = NumericalPreProcessor()
@@ -52,12 +52,11 @@ class NumericalPreProcessorTest(unittest.TestCase):
             mean = np.mean(data, axis=0)
             var = np.var(data, axis=0)
             
-            # TODO: variance accuracy issue
             self.assertTrue(result[NumericalPreProcessor.NUM] == num, 'num doesn\'t match!\nex: ' + str(num) + '\nis: ' + str(result[NumericalPreProcessor.NUM]))
-            self.assertTrue(all(result[NumericalPreProcessor.MIN] == _min), 'min doesn\'t match!\nex: ' + str(_min) + '\nis: ' + str(result[NumericalPreProcessor.MIN]))
-            self.assertTrue(all(result[NumericalPreProcessor.MAX] == _max), 'max doesn\'t match!\nex: ' + str(_max) + '\nis: ' + str(result[NumericalPreProcessor.MAX]))
-            self.assertTrue(equals_with_tolerance(result[NumericalPreProcessor.MEAN], mean, tolerance), 'mean doesn\'t match!\nex: ' + str(mean) + '\nis: ' + str(result[NumericalPreProcessor.MEAN]))
-            self.assertTrue(equals_with_tolerance(result[NumericalPreProcessor.VAR], var, tolerance), 'variance doesn\'t match!\nex: ' + str(var) + '\nis: ' + str(result[NumericalPreProcessor.VAR]))
+            self.assertTrue(all(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MIN] == _min), 'min doesn\'t match!\nex: ' + str(_min) + '\nis: ' + str(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MIN]))
+            self.assertTrue(all(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MAX] == _max), 'max doesn\'t match!\nex: ' + str(_max) + '\nis: ' + str(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MAX]))
+            self.assertTrue(equals_with_tolerance(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MEAN], mean, tolerance), 'mean doesn\'t match!\nex: ' + str(mean) + '\nis: ' + str(result[NumericalPreProcessor.DATA][NumericalPreProcessor.MEAN]))
+            self.assertTrue(equals_with_tolerance(result[NumericalPreProcessor.DATA][NumericalPreProcessor.VAR], var, tolerance), 'variance doesn\'t match!\nex: ' + str(var) + '\nis: ' + str(result[NumericalPreProcessor.DATA][NumericalPreProcessor.VAR]))
 
 
 if __name__ == "__main__":
