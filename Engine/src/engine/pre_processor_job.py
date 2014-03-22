@@ -1,13 +1,14 @@
 '''
 Created on Mar 12, 2014
 
+@author: Simon
 '''
 import mrjob
 from mrjob.job import MRJob
 
 import protocol
-import pickle
 import sys
+from utils import serialization
 
 
 class PreProcessorJob(MRJob):
@@ -25,7 +26,7 @@ class PreProcessorJob(MRJob):
 
     def init(self):
         
-        data_handler = self._load_data_handler('data_handler.pkl')
+        data_handler = serialization.load_object('data_handler.pkl')
         
         self.pre_processor = data_handler.get_pre_processor()
         self.data_processor = data_handler.get_data_processor()
@@ -59,11 +60,6 @@ class PreProcessorJob(MRJob):
                      reducer_init = self.init,
                      reducer      = self.reducer )]
 
-    def _load_data_handler(self, file_name):
-        pkl_file = open(file_name, 'rb')
-        data_handler = pickle.load(pkl_file)
-        pkl_file.close()
-        return data_handler
 
 if __name__ == '__main__':
     PreProcessorJob.run()

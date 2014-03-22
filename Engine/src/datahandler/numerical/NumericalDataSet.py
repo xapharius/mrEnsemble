@@ -24,14 +24,14 @@ class NumericalDataSet(AbstractDataSet):
         self.targets = targets
         self.nrInputVars = inputs.shape[1]
         self.nrObservations = inputs.shape[0]
-        
+
         if targets != None:
             self.nrTargetVars = targets.shape[1]
             if inputs.shape[0] != targets.shape[0]:
                 raise Exception("number of inputs and targets observations mismatch")
         else:
             self.nrTargetVars = 0
-        
+
     def get_observation(self, nr):
         '''
         Get Observation from input matrix as tuple of input and target
@@ -45,7 +45,7 @@ class NumericalDataSet(AbstractDataSet):
         else:
             targetArr = None
         return inputArr, targetArr
-    
+
     def gen_observations(self):
         '''
         Iterate over all observations using a generator.
@@ -55,4 +55,12 @@ class NumericalDataSet(AbstractDataSet):
         for i in range(self.nrObservations):
             inputArr, targetArr = self.get_observation(i)
             yield inputArr, targetArr
-            
+
+    def get_inputs(self):
+        return self.inputs
+
+    def get_targets(self):
+        return self.targets
+
+    def get_nr_observations(self):
+        return self.nrObservations

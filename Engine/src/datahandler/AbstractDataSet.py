@@ -19,17 +19,38 @@ class AbstractDataSet(object):
         Constructor
         '''
         pass
-    
+
     @abstractmethod
     def get_observation(self, nr):
         '''
         Get Observation from input matrix as tuple of input and target
         '''
         pass
-    
+
     @abstractmethod
     def gen_observations(self):
         '''
         Iterate over all observations using a generator (e.g for online training)
+        '''
+        pass
+
+    @abstractmethod
+    def get_inputs(self):
+        '''
+        @return: The input data as numpy array without the target values (labels)
+        '''
+        pass
+
+    @abstractmethod
+    def get_targets(self):
+        '''
+        @return: The target values (labels).
+        '''
+        pass
+
+    @abstractmethod
+    def get_nr_observations(self):
+        '''
+        @return: The number of observations of this data set.
         '''
         pass

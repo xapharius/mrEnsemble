@@ -1,6 +1,7 @@
 from algorithms.linearRegression.LinearRegressionFactory import LinearRegressionFactory
 from datahandler.numerical.NumericalDataHandler import NumericalDataHandler
 from engine.engine import Engine
+from validator.PredictionValidator import PredictionValidator
 
 
 if __name__ == '__main__':
@@ -24,7 +25,9 @@ if __name__ == '__main__':
     data_handler = NumericalDataHandler(nr_params, nr_label_dim)
     
     # 3. run
-    engine = Engine(regression, data_handler, 'hdfs:///user/linda/ml/data/winequality-red.csv')
+    engine = Engine(regression, 'hdfs:///user/linda/ml/data/winequality-red.csv', data_handler=data_handler)
     trained_alg = engine.start()
     
-    # 4. do something good
+    # 4. validate result
+    validation_stats = engine.validate(trained_alg, PredictionValidator())
+    print validation_stats

@@ -1,3 +1,8 @@
+'''
+Created on Mar 19, 2014
+
+@author: Simon
+'''
 import mrjob
 from mrjob.job import MRJob
 
@@ -5,12 +10,12 @@ import protocol
 import sys
 from utils import serialization
 
-
-class EngineJob(MRJob):
+class ValidationJob(MRJob):
     '''
-    M/R Job for the actual training of an algorithm instance.
+    M/R job for validating a trained model.
     '''
     
+    # defaults
     INPUT_PROTOCOL = protocol.NLineCSVInputProtocol
     INTERNAL_PROTOCOL = mrjob.protocol.JSONProtocol
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
@@ -19,10 +24,16 @@ class EngineJob(MRJob):
 
 
     def init(self):
-        # load data handler and algorithm factory
-        self.factory = serialization.load_object('alg_factory.pkl')
-        self.data_handler = serialization.load_object('data_handler.pkl')
+        
+        validation_objects = serialization.load_object('validation.pkl')
+        
+        self.data_handler = validation_objects['data_handler']
+        self.pre_processor = self.data_handler.get_pre_processor()
+        self.data_processor = self.data_handler.get_data_processor()
         self.data_conf = self.data_handler.get_configuration()
+        
+        self.validator = validation_objects['validator']
+        self.alg = validation_objects['alg']
         
         # set configuration
         if self.data_conf:
@@ -34,29 +45,17 @@ class EngineJob(MRJob):
                 self.OUTPUT_PROTOCOL = self.data_conf.get_output_protocol()
             if self.data_conf.get_job_conf():
                 self.JOBCONF = self.data_conf.get_job_conf()
-        sys.stderr.write('input:    ' + str(self.INPUT_PROTOCOL) + '\n')
-        sys.stderr.write('internal: ' + str(self.INTERNAL_PROTOCOL) + '\n')
-        sys.stderr.write('output:   ' + str(self.OUTPUT_PROTOCOL) + '\n')
 
-    def mapper(self, key, value):
-        # create new algorithm instance
-        alg = self.factory.get_instance()
-        # create normalized data set
-        data_processor = self.data_handler.get_data_processor()
-        data_processor.set_data(value)
-        data_processor.normalize_data(self.data_handler.get_statistics())
-        data_set = data_processor.get_data_set()
-        # train the model
-        alg.train(data_set)
-        # prepare algorithm for transport
-        serialized = self.factory.encode(alg)
-        yield 'alg', serialized
+    def mapper(self, key, values):
+        self.data_processor.set_data(values)
+        self.data_processor.normalize_data(self.data_handler.get_statistics())
+        data_set = self.data_processor.get_data_set()
+        yield 'validation', self.validator.validate(self.alg, data_set)
 
     def reducer(self, key, values):
-        # 'values' is a generator, "convert" to list
-        values_list = list(values)
-        alg = self.factory.aggregate(self.factory.decode(values_list))
-        yield 'alg', self.factory.encode(alg)
+        vals = list(values)
+        sys.stderr.write('reducer received: ' + str(vals) + '\n')
+        yield key, self.validator.aggregate(vals)
 
     def steps(self):
         return [
@@ -67,4 +66,4 @@ class EngineJob(MRJob):
 
 
 if __name__ == '__main__':
-    EngineJob.run()
+    ValidationJob.run()
