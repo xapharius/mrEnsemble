@@ -79,7 +79,7 @@ class PredictionNN(AbstractAlgorithm):
         '''
         feed inputs forward through net.
         @param: inputVec nparray of inputs. Size defined by input layer. Row vector shape = (1,x) hint: np.array([[1,2,3]])
-        @return: activations for each neuron.
+        @return: activations for each layer shape = (1,x).
         @rtype: array of np.Arrays(1dim), for each layer one (weight layers + 1)
         @raise exception: if given input size doesn't match with input layer
         '''
@@ -109,27 +109,28 @@ class PredictionNN(AbstractAlgorithm):
     def sigDer(self, x):
         return x * (1 - x)
     
-    def backpropagation(self, activations, targets, learningRate = 0.5):
+    def backpropagation(self, activations, targets, learningRate = 0.05):
         '''
         Propagates errors through NN, computing the partial gradients and updating the weights
-        @param activations: List of np.arrays obtained from feedforward
+        @param activations: List of np.arrays(1,x) obtained from feedforward
         @param targets: np.array of shape (1,output_layer_size) representing the desired output
         @param learningRate: scalar. speed at which we move down the gradient  
         '''
         # the deltas from the delta rule
         # deltas for the output layer - no sigmoid derivative since output is linear
-        deltaRule = [(targets - activations[-1]).transpose()] 
-        # starting from second last layer, iterating backwards through NN
+        # deltas will have same shape as activations = (1,x)
+        deltaRule = [(targets - activations[-1])] 
+        # starting from second last layer, iterating backwards through nn UNTIL second layer (input layer doesnt need deltas)
         # weights i are between layer i and i + 1
         for i in reversed(range(1, self.nrLayers-1)):
             # multiply weights with previous computed deltas (first in list) to obtain 
             # the sum over all neurons in next layer, for each neuron in current layer
-            sums = np.dot(self.weightsArr[i], deltaRule[0])
+            sums = np.dot(self.weightsArr[i], deltaRule[0].transpose())
             # remove last sum since it is from bias neuron. we don't need a delta for it, 
             # since it doesn't have connections to the previous layer
-            sums = sums[:-1,:]
+            sums = sums[:-1,:].transpose()
             # element-wise multiply with the sigmoidal derivative for activation
-            deltaRule_thisLayer = self.sigDer(activations[i]).transpose() * sums
+            deltaRule_thisLayer = self.sigDer(activations[i]) * sums
             #PREpend deltas to array  
             deltaRule = [deltaRule_thisLayer] + deltaRule
             
@@ -138,6 +139,6 @@ class PredictionNN(AbstractAlgorithm):
         for i in range(self.nrLayers-1):
             # here the activations need the additional bias neuron -> addOneToVec
             # unfortunately both arrays have to be transposed
-            weightsChange = learningRate * np.dot(deltaRule[i], nputils.addOneToVec(activations[i])).transpose()
+            weightsChange = learningRate * np.dot(nputils.addOneToVec(activations[i]).transpose(), deltaRule[i])
             self.weightsArr[i] = self.weightsArr[i] + weightsChange
 

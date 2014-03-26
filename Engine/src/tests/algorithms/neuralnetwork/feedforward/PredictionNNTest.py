@@ -80,6 +80,7 @@ class Test(unittest.TestCase):
     def test_feedforward(self):
         '''
         test feed forward for sample input. activations should coincide with calculated values
+        shape (1,x)
         '''
         layerSizes = [2,2,1]
         nn = PredictionNN(layerSizes)
@@ -109,7 +110,7 @@ class Test(unittest.TestCase):
         nn.backpropagation(activations, np.array([0.5]))
         
         # value computed through backpropagation by hand
-        assert_equal(round(nn.weightsArr[0][0,0], 7), 0.9730573)
+        assert_equal(round(nn.weightsArr[0][0,0], 7), 0.9973057)
     
     def test_train(self):
         '''
