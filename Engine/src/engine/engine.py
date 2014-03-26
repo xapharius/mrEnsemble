@@ -1,16 +1,13 @@
 from mrjob.job import MRJob
-from engine_job import EngineJob
 import sys
-from pre_processor_job import PreProcessorJob
-from validation_job import ValidationJob
+from jobs.pre_processor_job import PreProcessorJob
+from jobs.validation_job import ValidationJob
 from utils import serialization
+from jobs.training_job import TrainingJob
+import constants as const
 
 
 class Engine(MRJob):
-
-    DATA_HANDLER_FILE_NAME = 'data_handler.pkl'
-    ALG_FACTORY_FILE_NAME = 'alg_factory.pkl'
-
 
     def __init__(self, alg_factory, data_file, data_handler=None, data_handler_file=None):
         '''
@@ -39,60 +36,56 @@ class Engine(MRJob):
 
         # serialize data handler and factory
         print('Serializing data handler and algorithm factory...')
-        serialization.save_object(self.DATA_HANDLER_FILE_NAME, self.data_handler)
-        serialization.save_object(self.ALG_FACTORY_FILE_NAME, self.alg_factory)
+        self.conf = { const.DATA_HANDLER: self.data_handler, const.ALG_FACTORY: self.alg_factory }
+        serialization.save_object(const.CONF_FILE_NAME, self.conf)
         print('...Done.\n')
 
 
         # -------- Pre-Processing ---------------------------------------------
 
-        if not self.skip_pre_processing:
+        if self.skip_pre_processing:
+            print("Skipping pre-processing\n")
+        else:
             pre_processor_job = PreProcessorJob(args=[
                       self.data_file,
                       '-r',               'hadoop',
                       '--file',           '../HadoopLib/target/ml-hadoop-lib.jar',
-                      '--file',           self.DATA_HANDLER_FILE_NAME,
+                      '--file',           const.CONF_FILE_NAME,
                       '--hadoop-arg',     '-libjars',
                       '--hadoop-arg',     '../HadoopLib/target/ml-hadoop-lib.jar',
                       '--python-archive', 'target/hadoop_ml.tar.gz',
                       '--strict-protocols'])
-    
-            # create output protocol instance for output parsing
-            output_protocol = pre_processor_job.OUTPUT_PROTOCOL()
-    
+
             with pre_processor_job.make_runner() as runner:
                 print('Running pre-processing job...')
                 runner.run()
                 print('...Done.\n')
                 # get pre-processing results and update data handler
                 # (!) assuming there is only a single result
-                (_, stats) = output_protocol.read(runner.stream_output().next())
-                self.data_handler.set_statistics(stats)
-                # overwrite old data handler file
-                serialization.save_object(self.DATA_HANDLER_FILE_NAME, self.data_handler)
-        else:
-            print("Skipping pre-processing\n")
+                _, stats = pre_processor_job.parse_output_line(runner.stream_output().next())
+                self.conf[const.DATA_HANDLER].set_statistics(stats)
+                # overwrite old configuration for training
+                serialization.save_object(const.CONF_FILE_NAME, self.conf)
 
 
         # ----------- Training ------------------------------------------------
 
-        engine_job = EngineJob(args=[
+        training_job = TrainingJob(args=[
                   self.data_file,
                   '-r',               'hadoop',
                   '--file',           '../HadoopLib/target/ml-hadoop-lib.jar',
-                  '--file',           self.DATA_HANDLER_FILE_NAME,
-                  '--file',           self.ALG_FACTORY_FILE_NAME,
+                  '--file',           const.CONF_FILE_NAME,
                   '--hadoop-arg',     '-libjars',
                   '--hadoop-arg',     '../HadoopLib/target/ml-hadoop-lib.jar',
                   '--python-archive', 'target/hadoop_ml.tar.gz',
                   '--strict-protocols'])
-        output_protocol = engine_job.OUTPUT_PROTOCOL()
-        with engine_job.make_runner() as runner:
+
+        with training_job.make_runner() as runner:
             print('Running training job...') 
             runner.run()
             print('...Done.\n')
             # (!) assuming there is only a single result
-            (_, trained_alg) = output_protocol.read(runner.stream_output().next())
+            _, trained_alg = training_job.parse_output_line(runner.stream_output().next())
         
         # TODO: cleanup pkl files
         
@@ -104,25 +97,25 @@ class Engine(MRJob):
         @param alg: Trained algorithm
         @param validator: Validator which should be used for validating a trained model.
         '''
-        validation_objects = { 'data_handler': self.data_handler, 'alg': alg, 'validator': validator }
-        serialization.save_object('validation.pkl', validation_objects)
-        
+        validation_objects = { const.DATA_HANDLER: self.data_handler, const.TRAINED_ALG: alg, const.VALIDATOR: validator }
+        serialization.save_object(const.CONF_FILE_NAME, validation_objects)
+
         validation_job = ValidationJob(args=[
                   self.data_file,
                   '-r',               'hadoop',
                   '--file',           '../HadoopLib/target/ml-hadoop-lib.jar',
-                  '--file',           'validation.pkl',
+                  '--file',           const.CONF_FILE_NAME,
                   '--hadoop-arg',     '-libjars',
                   '--hadoop-arg',     '../HadoopLib/target/ml-hadoop-lib.jar',
                   '--python-archive', 'target/hadoop_ml.tar.gz',
                   '--strict-protocols'])
-        output_protocol = validation_job.OUTPUT_PROTOCOL()
+
         print('Running validation job...') 
         with validation_job.make_runner() as runner:
             runner.run()
             print('...Done.\n')
             # (!) assuming there is only a single result
-            (_, stats) = output_protocol.read(runner.stream_output().next())
+            _, stats = validation_job.parse_output_line(runner.stream_output().next())
         return stats
 
 
