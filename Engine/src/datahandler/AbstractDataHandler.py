@@ -42,6 +42,14 @@ class AbstractDataHandler(object):
         '''
         pass
 
+    @abstractmethod
+    def get_new_statistics(self):
+        '''
+        @return: A new statistics instance implementing AbstractStatistics.
+        @rtype: AbstractStatistics
+        '''
+        pass
+
     def set_statistics(self, stats):
         '''
         Set results of pre-processing.

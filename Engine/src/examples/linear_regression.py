@@ -10,11 +10,14 @@ if __name__ == '__main__':
     
     nr_params = 11
     nr_label_dim = 1
-    data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv'
+#     data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv'
+    data_file = '../data/wine-quality/winequality-red.csv'
+    run_type = 'hadoop'
     
-    print(  "\n  data     : " + data_file
-          + "\n  params   : " + str(nr_params)
+    print(  "\n       data: " + data_file
+          + "\n     params: " + str(nr_params)
           + "\n  label dim: " + str(nr_label_dim)
+          + "\n   run type: " + run_type
           + "\n"
           )
     
@@ -25,7 +28,7 @@ if __name__ == '__main__':
     data_handler = NumericalDataHandler(nr_params, nr_label_dim)
     
     # 3. run
-    engine = Engine(regression, 'hdfs:///user/linda/ml/data/winequality-red.csv', data_handler=data_handler)
+    engine = Engine(regression, data_file, data_handler=data_handler, run_type=run_type)
     trained_alg = engine.start()
     
     # 4. validate result

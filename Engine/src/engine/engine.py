@@ -9,7 +9,7 @@ import constants as const
 
 class Engine(MRJob):
 
-    def __init__(self, alg_factory, data_file, data_handler=None, data_handler_file=None):
+    def __init__(self, alg_factory, data_file, data_handler=None, data_handler_file=None, run_type='hadoop'):
         '''
         @param alg_factory: algorithm factory implementing AbstractAlgorithmFactory
         @param data_handler: data handler implementing AbstractDataHandler
@@ -28,7 +28,7 @@ class Engine(MRJob):
             raise Exception("Either a data handler instance or a data handler file name have to be given!")
 
         self.data_file = data_file
-
+        self.run_type = run_type
 
     def start(self):
 
@@ -48,7 +48,7 @@ class Engine(MRJob):
         else:
             pre_processor_job = PreProcessorJob(args=[
                       self.data_file,
-                      '-r',               'hadoop',
+                      '-r',               self.run_type,
                       '--file',           '../HadoopLib/target/ml-hadoop-lib.jar',
                       '--file',           const.CONF_FILE_NAME,
                       '--hadoop-arg',     '-libjars',
@@ -62,8 +62,12 @@ class Engine(MRJob):
                 print('...Done.\n')
                 # get pre-processing results and update data handler
                 # (!) assuming there is only a single result
-                _, stats = pre_processor_job.parse_output_line(runner.stream_output().next())
-                self.conf[const.DATA_HANDLER].set_statistics(stats)
+                _, encoded_stats = pre_processor_job.parse_output_line(runner.stream_output().next())
+                # result of pre-processor has to be a dictionary with "data" and
+                # "target" key
+                data_stats = self.data_handler.get_new_statistics().decode(encoded_stats['data'])
+                target_stats = self.data_handler.get_new_statistics().decode(encoded_stats['target'])
+                self.conf[const.DATA_HANDLER].set_statistics({ 'data': data_stats, 'target': target_stats })
                 # overwrite old configuration for training
                 serialization.save_object(const.CONF_FILE_NAME, self.conf)
 
@@ -72,7 +76,7 @@ class Engine(MRJob):
 
         training_job = TrainingJob(args=[
                   self.data_file,
-                  '-r',               'hadoop',
+                  '-r',               self.run_type,
                   '--file',           '../HadoopLib/target/ml-hadoop-lib.jar',
                   '--file',           const.CONF_FILE_NAME,
                   '--hadoop-arg',     '-libjars',
@@ -102,7 +106,7 @@ class Engine(MRJob):
 
         validation_job = ValidationJob(args=[
                   self.data_file,
-                  '-r',               'hadoop',
+                  '-r',               self.run_type,
                   '--file',           '../HadoopLib/target/ml-hadoop-lib.jar',
                   '--file',           const.CONF_FILE_NAME,
                   '--hadoop-arg',     '-libjars',

@@ -5,7 +5,6 @@ Created on Jan 11, 2014
 '''
 from datahandler.AbstractDataProcessor import AbstractDataProcessor
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
-from datahandler.numerical.numerical_pre_processor import NumericalPreProcessor
 
 class NumericalDataProcessor(AbstractDataProcessor):
     '''
@@ -28,9 +27,11 @@ class NumericalDataProcessor(AbstractDataProcessor):
         Get Normaization statistics through get_jobconf_value
         Normalize local data
         '''
+        data_stats = stats['data']
+        target_stats = stats['target']
         try:
-            self.inputs = (self.inputs - stats[NumericalPreProcessor.DATA][NumericalPreProcessor.MEAN]) / stats[NumericalPreProcessor.DATA][NumericalPreProcessor.VAR]
-            self.labels = (self.labels - stats[NumericalPreProcessor.LABEL][NumericalPreProcessor.MEAN]) / stats[NumericalPreProcessor.LABEL][NumericalPreProcessor.VAR]
+            self.inputs = (self.inputs - data_stats.get_mean()) / data_stats.get_variance()
+            self.labels = (self.labels - target_stats.get_mean()) / target_stats.get_variance()
         except AttributeError:
             raise Exception("'set_data' has to be called before calling 'normalize_data'!")
 

@@ -11,13 +11,20 @@ class NLineCSVInputProtocol():
         # remove trailing line delimiter
         if data.endswith('\\n'):
             data = data[0:len(data)-2]
-        key, value = data.split('\t', 1)
+        if data.find('\t') != -1:
+            key, value = data.split('\t', 1)
+        else:
+            key, value = 0, data
         delimiter = ','
         if value.find(';') != -1:
             delimiter = ';'
         lines = value.split('\\n')
         
-        # TODO: sometimes a line is corrupted, although it is correctly built
+        # test if there are any lines
+        # TODO: is it better to return an empty np array here?
+        if len(lines) == 0:
+            return key, None
+        # sometimes a line is corrupted, although it is correctly built
         # by java record reader
         # hack for messed up lines
         arr = []
@@ -31,7 +38,6 @@ class NLineCSVInputProtocol():
         
         # convert to numpy array
         arr = np.array(arr)
-        sys.stderr.write('shape: ' + str(arr.shape) + '\n')
         result = np.zeros(arr.shape)
         # strip and convert values to float
         for i in range(arr.shape[0]):

@@ -22,25 +22,12 @@ class AbstractPreProcessor(object):
         '''
         pass  
 
-    #TODO: Send data to job_conf here or in Engine? 
-#     @abstractmethod
-#     def get_statistics(self, dataSource):
-#         '''
-#         Creates dictionary with statistics of the dataset
-#         Dictionary is constructed through map/reduce as the dataset is stored in HDFS
-#         Statistics are specific for each Dataclass (e.g images, timeseries etc)
-#         @param dataSource: location on HDFS of data that wants to be analysed 
-#         @return: Dictionary of collected statistics
-#         '''
-#         pass
-
     @abstractmethod
     def calculate(self, data_set):
         '''
         Actual pre-processing happens here. I.e. should determine necessary 
         information from the given values, like max, min, avg, ...
-        This is basically the Map step of the M/R pre-processing and should 
-        return a dictionary of the different results, e.g result['min'] = 0.
+        This is basically the Map step of the M/R pre-processing.
         '''
         pass
 
@@ -48,9 +35,7 @@ class AbstractPreProcessor(object):
     def aggregate(self, key, values):
         '''
         Results from different pre-processor's 'calculate' should be merged here
-        to give the overall result of the pre-processing. Given key is one of
-        the keys returned in 'calculate'. It is probably a good idea to respond
-        to different keys with a different behavior.
+        to give the overall result of the pre-processing.
         This is basically the Reduce step of the M/R pre-processing.
         '''
         pass

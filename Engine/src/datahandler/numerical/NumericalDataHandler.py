@@ -7,6 +7,7 @@ from datahandler.AbstractDataHandler import AbstractDataHandler
 from datahandler.numerical.NumericalDataProcessor import NumericalDataProcessor
 from datahandler.numerical.NumericalConfiguration import NumericalConfiguration
 from datahandler.numerical.numerical_pre_processor import NumericalPreProcessor
+from datahandler.numerical.numerical_stats import NumericalStats
 
 class NumericalDataHandler(AbstractDataHandler):
     '''
@@ -32,3 +33,6 @@ class NumericalDataHandler(AbstractDataHandler):
 
     def get_configuration(self):
         return NumericalConfiguration(self.LINES_PER_MAP)
+
+    def get_new_statistics(self):
+        return NumericalStats()
