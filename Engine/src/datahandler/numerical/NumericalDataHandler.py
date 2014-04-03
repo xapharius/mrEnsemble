@@ -16,7 +16,7 @@ class NumericalDataHandler(AbstractDataHandler):
 
     LINES_PER_MAP = 20
 
-    def __init__(self, nrInputDim, nrLabelDim):
+    def __init__(self, nrInputDim, nrLabelDim, input_scalling=None, target_scalling=None):
         '''
         Constructor
         @param nrInputDim: number of Input Dimensions dataset has
@@ -24,12 +24,14 @@ class NumericalDataHandler(AbstractDataHandler):
         '''
         self.nrInputDim = nrInputDim
         self.nrLabelDim = nrLabelDim
+        self.input_scalling = input_scalling
+        self.target_scalling = target_scalling
 
     def get_pre_processor(self):
         return NumericalPreProcessor()
 
     def get_data_processor(self):
-        return NumericalDataProcessor(self.nrInputDim, self.nrLabelDim)
+        return NumericalDataProcessor(self.nrInputDim, self.nrLabelDim, input_scalling=self.input_scalling, target_scalling=self.target_scalling)
 
     def get_configuration(self):
         return NumericalConfiguration(self.LINES_PER_MAP)

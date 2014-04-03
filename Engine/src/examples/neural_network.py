@@ -1,6 +1,9 @@
-from engine.engine import Engine
-from algorithms.neuralnetwork.feedforward.PredictionNNFactory import PredictionNNFactory
+from algorithms.neuralnetwork.feedforward.PredictionNNFactory import \
+    PredictionNNFactory
 from datahandler.numerical.NumericalDataHandler import NumericalDataHandler
+from datahandler.numerical.NumericalDataProcessor import NumericalDataProcessor
+from engine.constants.run_type import HADOOP, LOCAL
+from engine.engine import Engine
 import numpy as np
 
 
@@ -12,12 +15,18 @@ if __name__ == '__main__':
     nr_params = 11
     nr_label_dim = 1
     arr_layer_sizes = [ nr_params, 5, nr_label_dim ]
-    data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv'
+    run_type = HADOOP
+    data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv' if run_type == HADOOP else '../data/wine-quality/winequality-red.csv'
+    input_scalling = NumericalDataProcessor.STANDARDIZE
+    target_scalling = NumericalDataProcessor.STANDARDIZE
     
-    print(  "\n  data     : " + data_file
-          + "\n  params   : " + str(nr_params)
-          + "\n  label dim: " + str(nr_label_dim)
-          + "\n  layers   : " + str(arr_layer_sizes)
+    print(  "\n             data: " + data_file
+          + "\n           params: " + str(nr_params)
+          + "\n        label dim: " + str(nr_label_dim)
+          + "\n           layers: " + str(arr_layer_sizes)
+          + "\n         run type: " + run_type
+          + "\n   input scalling: " + input_scalling
+          + "\n  target scalling: " + target_scalling
           + "\n"
           )
     
@@ -25,10 +34,10 @@ if __name__ == '__main__':
     pred_nn = PredictionNNFactory(arr_layer_sizes)
     
     # 2. set data handler (pre-processing, normalization, data set creation)
-    data_handler = NumericalDataHandler(nr_params, nr_label_dim)
+    data_handler = NumericalDataHandler(nr_params, nr_label_dim, input_scalling=input_scalling, target_scalling=target_scalling)
     
     # 3. run
-    engine = Engine(pred_nn, data_handler, data_file)
+    engine = Engine(pred_nn, data_file, data_handler=data_handler, run_type=run_type)
     trained_alg = engine.start()
     print trained_alg.weightsArr
     

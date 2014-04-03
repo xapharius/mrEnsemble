@@ -4,7 +4,7 @@ from jobs.pre_processor_job import PreProcessorJob
 from jobs.validation_job import ValidationJob
 from utils import serialization
 from jobs.training_job import TrainingJob
-import constants as const
+import constants.internal as const
 
 
 class Engine(MRJob):
@@ -63,11 +63,8 @@ class Engine(MRJob):
                 # get pre-processing results and update data handler
                 # (!) assuming there is only a single result
                 _, encoded_stats = pre_processor_job.parse_output_line(runner.stream_output().next())
-                # result of pre-processor has to be a dictionary with "data" and
-                # "target" key
-                data_stats = self.data_handler.get_new_statistics().decode(encoded_stats['data'])
-                target_stats = self.data_handler.get_new_statistics().decode(encoded_stats['target'])
-                self.conf[const.DATA_HANDLER].set_statistics({ 'data': data_stats, 'target': target_stats })
+                stats = self.data_handler.get_new_statistics().decode(encoded_stats)
+                self.conf[const.DATA_HANDLER].set_statistics(stats)
                 # overwrite old configuration for training
                 serialization.save_object(const.CONF_FILE_NAME, self.conf)
 

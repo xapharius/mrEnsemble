@@ -16,7 +16,7 @@ class NumericalPreProcessorTest(unittest.TestCase):
     def test_data_stats_calculation(self):
         pre_processor = NumericalPreProcessor()
         data_set = NumericalDataSet(np.random.random_integers(1,10, (10,10)), np.random.random_integers(1,10, (10,1)))
-        result = NumericalStats(encoded=pre_processor.calculate(data_set)['data'])
+        result = NumericalStats().decode(pre_processor.calculate(data_set)).get_input_stats()
         
         data = data_set.inputs
         size = data.shape[0]
@@ -42,7 +42,7 @@ class NumericalPreProcessorTest(unittest.TestCase):
             stats_1 = pre_processor.calculate(data_set_1)
             stats_2 = pre_processor.calculate(data_set_2)
             
-            result = NumericalStats(encoded=pre_processor.aggregate(1, [stats_1, stats_2])['data'])
+            result = NumericalStats().decode(pre_processor.aggregate(1, [stats_1, stats_2])).get_input_stats()
             
             data = np.vstack((data_set_1.inputs, data_set_2.inputs))
             size = data.shape[0]

@@ -1,92 +1,46 @@
 '''
-Created on Mar 26, 2014
+Created on Apr 3, 2014
 
-@author: Simon
+@author: linda
 '''
-
-import numpy as np
 from datahandler.abstract_statistics import AbstractStatistics
+from datahandler.numerical.basic_numerical_stats import BasicNumericalStats
 
 class NumericalStats(AbstractStatistics):
     '''
-    Aggregates numerical statistics like min, max, mean, variance.
+    Numerical statistics for labeled data. Basically consists of two 
+    BasicNumericalStats for data and labels.
     '''
 
-    def __init__(self, size=0, min_val=0, max_val=0, mean_val=0, variance=0, encoded=None):
-        if encoded is not None:
-            self.decode(encoded)
-        else:
-            self.size = size
-            self.set_min(min_val)
-            self.set_max(max_val)
-            self.set_mean(mean_val)
-            self.set_variance(variance)
 
-    def set_min(self, min_val):
-        try:
-            self.min = min_val.tolist()
-        except AttributeError:
-            self.min = min_val
+    def __init__(self, input_stats=None, target_stats=None):
+        '''
+        Creates new labeled statistics using the given statistics.
+        @param input_stats: numerical input statistics
+        @param target_stats: numerical target statistics
+        '''
+        self.input_stats = input_stats
+        self.target_stats = target_stats
 
-    def get_min(self, as_np_array=True):
-        if as_np_array:
-            return np.array(self.min)
-        return self.min
+    def get_input_stats(self):
+        return self.input_stats
 
-    def set_max(self, max_val):
-        try:
-            self.max = max_val.tolist()
-        except AttributeError:
-            self.max = max_val
-
-    def get_max(self, as_np_array=True):
-        if as_np_array:
-            return np.array(self.max)
-        return self.max
-
-    def set_mean(self, mean_val):
-        try:
-            self.mean = mean_val.tolist()
-        except AttributeError:
-            self.mean = mean_val
-
-    def get_mean(self, as_np_array=True):
-        if as_np_array:
-            return np.array(self.mean)
-        return self.mean
-
-    def set_variance(self, variance):
-        try:
-            self.variance = variance.tolist()
-        except AttributeError:
-            self.variance = variance
-
-    def get_variance(self, as_np_array=True):
-        if as_np_array:
-            return np.array(self.variance)
-        return self.variance
-
-    def set_size(self, size):
-        self.size = size
-
-    def get_size(self):
-        return self.size
-
-    def copy_from(self, other):
-        self.size = other.size
-        self.min = other.min
-        self.max = other.max
-        self.mean = other.mean
-        self.variance = other.variance
+    def get_target_stats(self):
+        return self.target_stats
 
     def encode(self):
-        return { 'size': self.size, 'min': self.min, 'max': self.max, 'mean': self.mean, 'variance': self.variance }
+        enc_input_stats = self.input_stats.encode()
+        enc_target_stats = None
+        if self.target_stats is not None:
+            enc_target_stats = self.target_stats.encode()
+        return { 'input_stats': enc_input_stats,
+                'target_stats': enc_target_stats }
 
     def decode(self, encoded_stats):
-        self.size = encoded_stats['size']
-        self.min = encoded_stats['min']
-        self.max = encoded_stats['max']
-        self.mean = encoded_stats['mean']
-        self.variance = encoded_stats['variance']
+        self.input_stats = BasicNumericalStats().decode(encoded_stats['input_stats'])
+        enc_target_stats = encoded_stats['target_stats']
+        if enc_target_stats is not None:
+            self.target_stats = BasicNumericalStats().decode(enc_target_stats)
+        else:
+            self.target_stats = None
         return self
-

@@ -2,7 +2,7 @@ import mrjob
 from mrjob.job import MRJob
 
 from utils import serialization
-import constants as const
+import constants.internal as const
 
 
 class EngineJob(MRJob):
