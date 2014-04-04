@@ -14,7 +14,7 @@ from datahandler.numerical.numerical_stats import NumericalStats
 class NumericalDataProcessorTest(unittest.TestCase):
 
     def setUp(self):
-        self.rawData = np.array([[1,2,3,4], [2,3,4,5], [3,4,5,6]])
+        self.rawData = np.array([[1.,2.,3.,4.], [2.,3.,4.,5.], [3.,4.,5.,6.]])
 
 
     def test_constructor(self):
@@ -51,6 +51,63 @@ class NumericalDataProcessorTest(unittest.TestCase):
         targets = (targets - np.mean(targets, axis=0)) / np.var(targets, axis=0)
         
         assert_array_almost_equal(data_set.get_targets(), targets)
+
+    def test_normalize_inputs(self):
+        data_proc = NumericalDataProcessor(3, 1)
+        data_proc.input_scalling = NumericalDataProcessor.NORMALIZE
+        data_proc.set_data(self.rawData)
+        data_set = data_proc.get_data_set()
+        stats = NumericalStats().decode(NumericalPreProcessor().calculate(data_set))
+        data_proc.normalize_data(stats)
+        data_set = data_proc.get_data_set()
+        
+        inputs = self.rawData[:, :3]
+        inputs = (inputs - np.min(inputs, axis=0)) / (np.max(inputs, axis=0) - np.min(inputs, axis=0))
+        
+        assert_array_almost_equal(data_set.get_inputs(), inputs)
+
+    def test_nomralize_targets(self):
+        data_proc = NumericalDataProcessor(3, 1)
+        data_proc.target_scalling = NumericalDataProcessor.NORMALIZE
+        data_proc.set_data(self.rawData)
+        data_set = data_proc.get_data_set()
+        stats = NumericalStats().decode(NumericalPreProcessor().calculate(data_set))
+        data_proc.normalize_data(stats)
+        data_set = data_proc.get_data_set()
+        
+        targets = self.rawData[:, 3:]
+        targets = (targets - np.min(targets, axis=0)) / (np.max(targets, axis=0) - np.min(targets, axis=0))
+        
+        assert_array_almost_equal(data_set.get_targets(), targets)
+
+    def test_to_unit_length_inputs(self):
+        data_proc = NumericalDataProcessor(3, 1)
+        data_proc.input_scalling = NumericalDataProcessor.UNIT_LENGTH
+        data_proc.set_data(self.rawData)
+        data_set = data_proc.get_data_set()
+        stats = NumericalStats().decode(NumericalPreProcessor().calculate(data_set))
+        data_proc.normalize_data(stats)
+        data_set = data_proc.get_data_set()
+        
+        inputs = self.rawData[:, :3]
+        inputs = map(lambda row: row / np.linalg.norm(row), inputs)
+        
+        assert_array_almost_equal(data_set.get_inputs(), inputs)
+
+    def test_to_unit_length_targets(self):
+        data_proc = NumericalDataProcessor(3, 1)
+        data_proc.target_scalling = NumericalDataProcessor.UNIT_LENGTH
+        data_proc.set_data(self.rawData)
+        data_set = data_proc.get_data_set()
+        stats = NumericalStats().decode(NumericalPreProcessor().calculate(data_set))
+        data_proc.normalize_data(stats)
+        data_set = data_proc.get_data_set()
+        
+        targets = self.rawData[:, 3:]
+        targets = map(lambda row: row / np.linalg.norm(row), targets)
+        
+        assert_array_almost_equal(data_set.get_targets(), targets)
+
 
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']

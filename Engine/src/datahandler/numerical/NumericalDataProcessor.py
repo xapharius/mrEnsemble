@@ -5,6 +5,7 @@ Created on Jan 11, 2014
 '''
 from datahandler.AbstractDataProcessor import AbstractDataProcessor
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
+import numpy as np 
 
 class NumericalDataProcessor(AbstractDataProcessor):
     '''
@@ -36,33 +37,22 @@ class NumericalDataProcessor(AbstractDataProcessor):
         target_stats = stats.get_target_stats()
 
         try:
-            # input scalling
-            if self.input_scalling is None:
-                pass
-            elif self.input_scalling == self.STANDARDIZE:
-                self.inputs = (self.inputs - input_stats.get_mean()) / input_stats.get_variance()
-            elif self.input_scalling == self.NORMALIZE:
-                # TODO:
-                pass
-            elif self.input_scalling == self.UNIT_LENGTH:
-                # TODO:
-                pass
-
-            # target scalling
-            if  self.target_scalling is None:
-                pass
-            elif self.target_scalling == self.STANDARDIZE:
-                self.targets = (self.targets - target_stats.get_mean()) / target_stats.get_variance()
-            elif self.target_scalling == self.NORMALIZE:
-                # TODO:
-                pass
-            elif self.target_scalling == self.UNIT_LENGTH:
-                # TODO:
-                pass
-
+            # feature scalling
+            self.inputs = self._scale(self.inputs, input_stats, self.input_scalling)
+            self.targets = self._scale(self.targets, target_stats, self.target_scalling)
         except AttributeError:
             raise Exception("'set_data' has to be called before calling 'normalize_data'!")
 
+    def _scale(self, data, stats, scalling):
+        if scalling is None:
+            return data
+        elif scalling == self.STANDARDIZE:
+            result = (data - stats.get_mean()) / stats.get_variance()
+        elif scalling == self.NORMALIZE:
+            result = (data - stats.get_min()) / (stats.get_max() - stats.get_min())
+        elif scalling == self.UNIT_LENGTH:
+            result = np.array(map(lambda row: row / np.linalg.norm(row), data))
+        return result
 
     def set_data(self, raw_data):
         '''
