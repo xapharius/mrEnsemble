@@ -13,7 +13,7 @@ class PredictionNN(AbstractAlgorithm):
     '''
 
 
-    def __init__(self, arrLayerSizes):
+    def __init__(self, arrLayerSizes, iterations=1):
         '''
         Creates a Prediction Neural Network - weights 
         :param arrLayerSizes: list with number of neurons each layer should have. index starts with input layer.
@@ -21,6 +21,7 @@ class PredictionNN(AbstractAlgorithm):
         # Sizes for each layer, 0 is input layer
         self.arrLayerSizes = arrLayerSizes
         self.nrLayers = len(arrLayerSizes)
+        self.iterations = iterations
         
         weightsArr = []
         for layer in range(len(arrLayerSizes)-1):
@@ -37,12 +38,14 @@ class PredictionNN(AbstractAlgorithm):
         Online Training for given dataset
         @param _dataSet: NumericalDataSet
         '''
-        # go through all observation
-        for inputArr, targetArr in dataSet.gen_observations():
-            # feedforward
-            activations = self.feedforward(inputArr)
-            # backprop
-            self.backpropagation(activations, targetArr)
+        for _ in range(self.iterations):
+            # randomly select observations as many times as there are observations
+            for _ in range(dataSet.get_nr_observations()):
+                inputArr, targetArr = dataSet.rand_observation()
+                # feedforward
+                activations = self.feedforward(inputArr)
+                # backprop
+                self.backpropagation(activations, targetArr)
 
     def predict(self, dataSet):
         '''

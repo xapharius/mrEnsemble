@@ -15,6 +15,7 @@ if __name__ == '__main__':
     nr_params = 11
     nr_label_dim = 1
     arr_layer_sizes = [ nr_params, 5, nr_label_dim ]
+    iterations = 50
     run_type = HADOOP
     data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv' if run_type == HADOOP else '../data/wine-quality/winequality-red.csv'
     input_scalling = NumericalDataProcessor.STANDARDIZE
@@ -24,6 +25,7 @@ if __name__ == '__main__':
           + "\n           params: " + str(nr_params)
           + "\n        label dim: " + str(nr_label_dim)
           + "\n           layers: " + str(arr_layer_sizes)
+          + "\n       iterations: " + str(iterations)
           + "\n         run type: " + run_type
           + "\n   input scalling: " + input_scalling
           + "\n  target scalling: " + target_scalling
@@ -31,7 +33,7 @@ if __name__ == '__main__':
           )
     
     # 1. define algorithm
-    pred_nn = PredictionNNFactory(arr_layer_sizes)
+    pred_nn = PredictionNNFactory(arr_layer_sizes, iterations)
     
     # 2. set data handler (pre-processing, normalization, data set creation)
     data_handler = NumericalDataHandler(nr_params, nr_label_dim, input_scalling=input_scalling, target_scalling=target_scalling)

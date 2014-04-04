@@ -15,19 +15,19 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
     '''
 
 
-    def __init__(self, arrLayerSizes):
+    def __init__(self, arrLayerSizes, iterations=1):
         '''
         Initializes the Factory and sets the parameters for the Model
         '''
         self.arrLayerSizes = arrLayerSizes
-    
+        self.iterations = iterations
+
     def get_instance(self):
         '''Create a PredictionNN Object
         :return: Object implementing AbstractAlgorithm
         '''
-        newNN = PredictionNN(self.arrLayerSizes);
-        return newNN
-        
+        return PredictionNN(self.arrLayerSizes, self.iterations);
+
     def aggregate(self, NNArr):
         '''Aggregate all PredictionNN from NNArr Prameter by AVERAGING
         :param NNArr: (normal)array of PredictionNN
@@ -39,11 +39,11 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
             weights = np.zeros((self.arrLayerSizes[layer]+1, self.arrLayerSizes[layer+1]))
             aggrWeightsArr.append(weights)
         
-        #for each network add respective layers
+        # for each network add respective layers
         for NN in NNArr:
             for wIndex in range(len(NN.weightsArr)):
                 aggrWeightsArr[wIndex] += NN.weightsArr[wIndex]  
-        #divide by numer of networks
+        # divide by numer of networks
         for wIndex in range(len(NN.weightsArr)):
                 aggrWeightsArr[wIndex] /= len(NNArr)
         
@@ -51,14 +51,14 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
         aggrNN.set_params(aggrWeightsArr)
         
         return aggrNN
-    
+
     def encode(self, alg_instance):
         # bring nparrays to list type (to be json encodable)
         weightsArr = []
         for npArr in alg_instance.weightsArr:
             weightsArr.append(npArr.tolist())
         return weightsArr
-    
+
     def decode(self, encoded):
         alg_list = []
         # encode is a list of encoded algorithm instances
@@ -72,5 +72,4 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
             newPredictionNN.set_params(npWeightsArr)
             alg_list.append(newPredictionNN)
         return alg_list
-            
-        
+

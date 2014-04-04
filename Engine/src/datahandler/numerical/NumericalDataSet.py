@@ -56,6 +56,10 @@ class NumericalDataSet(AbstractDataSet):
             inputArr, targetArr = self.get_observation(i)
             yield inputArr, targetArr
 
+    def rand_observation(self):
+        i = np.random.randint(0, high=self.nrObservations)
+        return self.get_observation(i)
+
     def get_inputs(self):
         return self.inputs
 
