@@ -31,7 +31,7 @@ class LinearRegression(AbstractAlgorithm):
         pseudoInv = np.linalg.pinv(np.dot(inputs.T, inputs))
         part2 = np.dot(inputs.T, _dataSet.targets)
         self.params = np.dot(pseudoInv, part2).T
-        
+
     def addOnes(self, _matrix):
         '''
         @param param: np.array
@@ -50,10 +50,10 @@ class LinearRegression(AbstractAlgorithm):
         resMat = np.dot(inputs, self.params.T)
         retArr = []
         for i in range(resMat.shape[0]):
-            retArr.append([np.array(resMat[i])])
+            retArr.append(np.array([resMat[i]]))
         return retArr
-            
-    
+
+
     def set_params(self, parameters):
         #sys.stderr.write("set params: " + str(parameters) + "\n")
         '''Set parameters of predefined model(shape of parameters already specified)

@@ -1,10 +1,13 @@
+from matplotlib.pyplot import plot, show
+
 from algorithms.neuralnetwork.feedforward.PredictionNNFactory import \
     PredictionNNFactory
 from datahandler.numerical.NumericalDataHandler import NumericalDataHandler
 from datahandler.numerical.NumericalDataProcessor import NumericalDataProcessor
-from engine.constants.run_type import HADOOP, LOCAL
+from engine.constants.run_type import HADOOP, LOCAL, INLINE
 from engine.engine import Engine
 import numpy as np
+from validator.PredictionValidator import PredictionValidator
 
 
 if __name__ == '__main__':
@@ -15,11 +18,11 @@ if __name__ == '__main__':
     nr_params = 11
     nr_label_dim = 1
     arr_layer_sizes = [ nr_params, 5, nr_label_dim ]
-    iterations = 50
+    iterations = 1000
     run_type = HADOOP
     data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv' if run_type == HADOOP else '../data/wine-quality/winequality-red.csv'
     input_scalling = NumericalDataProcessor.STANDARDIZE
-    target_scalling = NumericalDataProcessor.STANDARDIZE
+    target_scalling = None
     
     print(  "\n             data: " + data_file
           + "\n           params: " + str(nr_params)
@@ -27,8 +30,8 @@ if __name__ == '__main__':
           + "\n           layers: " + str(arr_layer_sizes)
           + "\n       iterations: " + str(iterations)
           + "\n         run type: " + run_type
-          + "\n   input scalling: " + input_scalling
-          + "\n  target scalling: " + target_scalling
+          + "\n   input scalling: " + str(input_scalling)
+          + "\n  target scalling: " + str(target_scalling)
           + "\n"
           )
     
@@ -41,7 +44,14 @@ if __name__ == '__main__':
     # 3. run
     engine = Engine(pred_nn, data_file, data_handler=data_handler, run_type=run_type)
     trained_alg = engine.start()
-    print trained_alg.weightsArr
+    
+    # 4. validate result
+    validation_stats = engine.validate(trained_alg, PredictionValidator())
+    targets = np.array(validation_stats['targets'])
+    pred = np.array(validation_stats['pred'])
+    plot(targets, 'go')
+    plot(pred, 'r+')
+    show()
     
     data_processor = data_handler.get_data_processor()
     data_processor.set_data(np.array([[7.4, 0.7, 0 , 1.9, 0.076, 11, 34, 0.9978, 3.51, 0.56, 9.4, 5]]))
@@ -51,5 +61,3 @@ if __name__ == '__main__':
     
     print(pred)
     print(test_set.targets)
-    
-    # 4. do something good

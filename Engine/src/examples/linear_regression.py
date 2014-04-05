@@ -1,9 +1,13 @@
-from algorithms.linearRegression.LinearRegressionFactory import LinearRegressionFactory
+from matplotlib.pyplot import *
+
+from algorithms.linearRegression.LinearRegressionFactory import \
+    LinearRegressionFactory
 from datahandler.numerical.NumericalDataHandler import NumericalDataHandler
+from engine.constants.run_type import *
 from engine.engine import Engine
 from validator.PredictionValidator import PredictionValidator
-from datahandler.numerical.NumericalDataProcessor import NumericalDataProcessor
-from engine.constants.run_type import *
+from algorithms.linearRegression.scipy_linreg_factory import SciPyLinRegFactory
+from algorithms.linearRegression.scipy_linreg import SciPyLinReg
 
 
 if __name__ == '__main__':
@@ -12,22 +16,23 @@ if __name__ == '__main__':
     
     nr_params = 11
     nr_label_dim = 1
-    run_type = LOCAL
+    run_type = HADOOP
     data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv' if run_type == HADOOP else '../data/wine-quality/winequality-red.csv'
-    input_scalling = NumericalDataProcessor.STANDARDIZE
-    target_scalling = NumericalDataProcessor.STANDARDIZE
+    input_scalling = None
+    target_scalling = None
     
     print(  "\n             data: " + data_file
           + "\n           params: " + str(nr_params)
           + "\n        label dim: " + str(nr_label_dim)
           + "\n         run type: " + run_type
-          + "\n   input scalling: " + input_scalling
-          + "\n  target scalling: " + target_scalling
+          + "\n   input scalling: " + str(input_scalling)
+          + "\n  target scalling: " + str(target_scalling)
           + "\n"
           )
     
     # 1. define algorithm
-    regression = LinearRegressionFactory(nr_params)
+#     regression = LinearRegressionFactory(nr_params)
+    regression = SciPyLinRegFactory(SciPyLinReg.RIDGE)
     
     # 2. set data handler (pre-processing, normalization, data set creation)
     data_handler = NumericalDataHandler(nr_params, nr_label_dim, input_scalling=input_scalling, target_scalling=target_scalling)
@@ -38,4 +43,8 @@ if __name__ == '__main__':
     
     # 4. validate result
     validation_stats = engine.validate(trained_alg, PredictionValidator())
-    print validation_stats
+    targets = np.array(validation_stats['targets'])
+    pred = np.array(validation_stats['pred'])
+    plot(targets, 'go')
+    plot(pred, 'r+')
+    show()
