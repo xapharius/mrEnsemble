@@ -29,8 +29,8 @@ def addOneToVec(npArr):
         raise Exception("addOne works only for one dimensional vectors")
         
     return t_npArr
-    
-    
+
+
 def sigmoidScalar(x):
     '''
     @param x: scalar
@@ -38,12 +38,13 @@ def sigmoidScalar(x):
     @rtype: scalar
     '''
     if x > 100:
-        sys.stderr.write("sigmoid received value greater 100: " + str(x) + "\n")
+        # sys.stderr.write("sigmoid received value greater 100: " + str(x) + "\n")
         return 1
     elif x < -100:
-        sys.stderr.write("sigmoid received value smaller -100: " + str(x) + "\n")
+        # sys.stderr.write("sigmoid received value smaller -100: " + str(x) + "\n")
         return 0
     return 1. / (1. + math.exp(-x))
+
 
 def sigmoidNPArray(npArr):
     '''
@@ -86,3 +87,18 @@ def expNPArrayList(lst, power):
         retList.append(nparr ** power)
      
     return retList
+
+def to_list(arr):
+    '''
+    Creates a list representation of the given np.array or list of np.arrays.
+    @param arr: np.array or list of np.arrays
+    @return: list representation of the given input
+    @rtype: list 
+    '''
+    try:
+        return arr.tolist()
+    except AttributeError:
+        result = []
+        for row in arr:
+            result.append(row.tolist())
+        return result

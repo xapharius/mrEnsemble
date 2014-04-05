@@ -7,6 +7,7 @@ import utils.numpyutils as nputils
 import numpy as np
 import operator
 from validator.abstract_validator import AbstractValidator
+from utils import numpyutils
 
 class PredictionValidator(AbstractValidator):
     '''
@@ -17,17 +18,26 @@ class PredictionValidator(AbstractValidator):
         predictions = alg.predict(data_set)
         mse = self.compute_mse(data_set.get_targets(), predictions)
 #         r2 = self.compute_r2(data_set.get_targets(), predictions)
-        return { 'mse': mse, 'num': data_set.get_nr_observations() }
+        # predictions are a list of 2D numpy arrays
+        # convert to 2D matrix
+        prediction_matrix = []
+        for pred in predictions:
+            prediction_matrix.extend(numpyutils.to_list(pred))
+        return { 'mse': mse, 'num': data_set.get_nr_observations(), 'targets': data_set.get_targets().tolist(), 'pred': prediction_matrix }
 
     def aggregate(self, validation_results):
-        result = { 'mse': 0, 'num': 0 }
+        result = { 'mse': 0, 'num': 0, 'targets': [], 'pred': [] }
         for r in validation_results:
             if result['num'] == 0:
                 result['mse'] = r['mse']
                 result['num'] = r['num']
+                result['targets'] = r['targets']
+                result['pred'] = r['pred']
             else:
                 result['mse'] = (result['mse']*result['num'] + r['mse']*r['num'])/(result['num'] + r['num'])
                 result['num'] += r['num']
+                result['targets'].extend(r['targets'])
+                result['pred'].extend(r['pred'])
         return result
 
     # TODO: prediction with multiple outputs?
