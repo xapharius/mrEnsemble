@@ -13,11 +13,11 @@ import org.apache.hadoop.mapred.Reporter;
 
 
 public class NLineFileInputFormat extends FileInputFormat<LongWritable, Text> {
-	
-	@Override
-	public RecordReader<LongWritable, Text> getRecordReader(InputSplit split,
-			JobConf conf, Reporter reporter) throws IOException {
-		return new NLineFileRecordReader(conf, (FileSplit) split);
-	}
-	
+    
+    @Override
+    public RecordReader<LongWritable, Text> getRecordReader(InputSplit split,
+            JobConf conf, Reporter reporter) throws IOException {
+        return new NLineFileRecordReader(conf, (FileSplit) split);
+    }
 }
+

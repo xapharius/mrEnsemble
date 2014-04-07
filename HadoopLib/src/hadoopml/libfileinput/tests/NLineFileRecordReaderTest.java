@@ -1,12 +1,9 @@
 package hadoopml.libfileinput.tests;
 
-import static org.junit.Assert.fail;
 import hadoopml.libfileinput.NLineFileRecordReader;
 
-import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.Random;
@@ -16,7 +13,6 @@ import org.apache.hadoop.io.LongWritable;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.mapred.FileSplit;
 import org.apache.hadoop.mapred.JobConf;
-import org.apache.hadoop.util.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -35,7 +31,9 @@ public class NLineFileRecordReaderTest {
 		Text value = reader.createValue();
 		reader.next(key, value);
 		
-		String firstLine = new BufferedReader(new FileReader(file)).readLine();
+		BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+		String firstLine = bufferedReader.readLine();
+		bufferedReader.close();
 		
 		Assert.assertEquals(firstLine, value.toString());
 	}
