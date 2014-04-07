@@ -18,8 +18,8 @@ if __name__ == '__main__':
     nr_params = 11
     nr_label_dim = 1
     arr_layer_sizes = [ nr_params, 5, nr_label_dim ]
-    iterations = 1000
-    run_type = HADOOP
+    iterations = 100
+    run_type = LOCAL
     data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv' if run_type == HADOOP else '../data/wine-quality/winequality-red.csv'
     input_scalling = NumericalDataProcessor.STANDARDIZE
     target_scalling = None
@@ -42,11 +42,11 @@ if __name__ == '__main__':
     data_handler = NumericalDataHandler(nr_params, nr_label_dim, input_scalling=input_scalling, target_scalling=target_scalling)
     
     # 3. run
-    engine = Engine(pred_nn, data_file, data_handler=data_handler, run_type=run_type)
-    trained_alg = engine.start()
+    engine = Engine(pred_nn, data_file, data_handler=data_handler)
+    trained_alg = engine.start(_run_type=run_type)
     
     # 4. validate result
-    validation_stats = engine.validate(trained_alg, PredictionValidator())
+    validation_stats = engine.validate(trained_alg, PredictionValidator(), _run_type=run_type)
     targets = np.array(validation_stats['targets'])
     pred = np.array(validation_stats['pred'])
     plot(targets, 'go')

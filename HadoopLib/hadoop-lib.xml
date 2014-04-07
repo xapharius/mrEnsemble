@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="hadoop-lib" default="makejar" basedir=".">
+	<property name="projectHome" location="." />
+	<dirname property="hadoop-lib.basedir" file="${ant.file.hadoop-lib}"/>
+	<target name="makejar" description="Create ML Hadoop lib jar">
+		<jar destfile="${hadoop-lib.basedir}/target/ml-hadoop-lib.jar" basedir="${hadoop-lib.basedir}/bin" />
+	</target>
+</project>
