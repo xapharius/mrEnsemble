@@ -53,7 +53,8 @@ class Engine(MRJob):
                      ]
         # add java library depending on running on EMR or Hadoop
         if _run_type == run_type.EMR:
-            job_args.extend([ '--file', self.ml_lib_jar_name ])
+#             job_args.extend([ '--file', self.ml_lib_jar + '#/home/hadoop/lib' ])
+            job_args.extend([ '--bootstrap-cmd', '\'${HADOOP_HOME}/bin/hadoop distcp s3n://mybucket/ml-hadoop-lib.jar /home/hadoop/lib\'' ])
             job_args.extend([ '--hadoop-arg', '-libjars', '--hadoop-arg', self.ml_lib_jar_name ])
         elif _run_type == run_type.HADOOP:
             job_args.extend([ '--hadoop-arg', '-libjars', '--hadoop-arg', self.ml_lib_jar ])
