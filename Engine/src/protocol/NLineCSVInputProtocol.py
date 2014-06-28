@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 
-class NLineCSVInputProtocol():
+class NLineCSVInputProtocol(object):
     '''
     MrJob input protocol that creates a matrix from multiple CSV lines parsing
     each value as float

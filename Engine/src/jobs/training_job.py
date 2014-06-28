@@ -10,13 +10,13 @@ class TrainingJob(EngineJob):
     M/R Job for the actual training of an algorithm instance.
     '''
 
-    def mapper(self, key, value):
+    def mapper(self, key, values):
         # create new algorithm instance
         alg_factory = self.get_alg_factory()
         alg = alg_factory.get_instance()
         # create normalized data set
         data_processor = self.get_data_processor()
-        data_processor.set_data(value)
+        data_processor.set_data(values)
         data_processor.normalize_data(self.get_statistics())
         data_set = data_processor.get_data_set()
         # train the model

@@ -5,6 +5,7 @@ import java.nio.ByteBuffer;
 import java.util.LinkedList;
 import java.util.List;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.hadoop.fs.FSDataInputStream;
 import org.apache.hadoop.fs.FileSystem;
 import org.apache.hadoop.fs.Path;
@@ -50,24 +51,31 @@ public class NWholeFileRecordReader implements
 
 	@Override
 	public long getPos() throws IOException {
-		return this.position;
+		return (long) (getProgress()*this.split.getLength());
 	}
 
 	@Override
 	public float getProgress() throws IOException {
-		return this.position / this.split.getLength();
+		return this.position / numberOfFiles;
 	}
 
 	@Override
 	public boolean next(Text key, BytesWritable value) throws IOException {
 		Path[] paths = split.getPaths();
+		// test if there are more files available
+		if (this.position >= paths.length) {
+			key.set("");
+			value.setSize(0);
+			return false;
+		}
 		StringBuilder keyBuilder = new StringBuilder();
 		List<byte[]> fileData = new LinkedList<byte[]>();
 		int fullDataLength = 0;
 		// try to read numberOfFiles images
-		for (int i = position; i < numberOfFiles; i++) {
+		for (int i = this.position; i < numberOfFiles; i++) {
 			// if there are no images left we have to stop
 			if (i >= split.getNumPaths()) {
+				this.position = this.numberOfFiles;
 				break;
 			}
 			Path file = paths[i];
@@ -96,18 +104,21 @@ public class NWholeFileRecordReader implements
 				fileData.add(data);
 				fullDataLength += data.length;
 			} finally {
-				in.close();
+				if (in != null)
+					in.close();
 			}
-			position++;
+			this.position++;
 		}
 		// put all data together
-		value.setCapacity(fullDataLength);
 		ByteBuffer buffer = ByteBuffer.allocate(fullDataLength);
 		for (byte[] bytes : fileData) {
 			buffer.put(bytes);
 		}
-		value.set(buffer.array(), 0, fullDataLength);
+		byte[] encoded = Base64.encodeBase64(buffer.array());
+		value.setCapacity(encoded.length);
+		value.set(encoded, 0, encoded.length);
 		key.set(keyBuilder.toString());
+		
 		return true;
 	}
 }

@@ -1,5 +1,4 @@
-from matplotlib.pyplot import *
-
+import numpy as np
 from algorithms.linearRegression.LinearRegressionFactory import LinearRegressionFactory
 from algorithms.linearRegression.scipy_linreg import SciPyLinReg
 from algorithms.linearRegression.scipy_linreg_factory import SciPyLinRegFactory
@@ -7,7 +6,7 @@ from datahandler.numerical.NumericalDataHandler import NumericalDataHandler
 from engine.constants.run_type import *
 from engine.engine import Engine
 from validator.PredictionValidator import PredictionValidator
-
+import matplotlib.pyplot as plt
 
 if __name__ == '__main__':
     
@@ -37,13 +36,13 @@ if __name__ == '__main__':
     data_handler = NumericalDataHandler(nr_params, nr_label_dim, input_scalling=input_scalling, target_scalling=target_scalling)
     
     # 3. run
-    engine = Engine(regression, data_file, data_handler=data_handler)
+    engine = Engine(regression, data_file, data_handler=data_handler, verbose=True)
     trained_alg = engine.start(_run_type=run_type)
     
     # 4. validate result
     validation_stats = engine.validate(trained_alg, PredictionValidator(), _run_type=run_type)
     targets = np.array(validation_stats['targets'])
     pred = np.array(validation_stats['pred'])
-    plot(targets, 'go')
-    plot(pred, 'r+')
-    show()
+    plt.plot(targets, 'go')
+    plt.plot(pred, 'r+')
+    plt.show()

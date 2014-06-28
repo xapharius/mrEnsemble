@@ -5,9 +5,9 @@ Created on Jan 11, 2014
 '''
 from datahandler.AbstractDataHandler import AbstractDataHandler
 from datahandler.numerical.NumericalDataProcessor import NumericalDataProcessor
-from datahandler.numerical.NumericalConfiguration import NumericalConfiguration
 from datahandler.numerical.numerical_pre_processor import NumericalPreProcessor
 from datahandler.numerical.numerical_stats import NumericalStats
+from datahandler.numerical.numerical_data_conf import NumericalDataConf
 
 class NumericalDataHandler(AbstractDataHandler):
     '''
@@ -26,6 +26,7 @@ class NumericalDataHandler(AbstractDataHandler):
         self.nrLabelDim = nrLabelDim
         self.input_scalling = input_scalling
         self.target_scalling = target_scalling
+        super(NumericalDataHandler, self).__init__()
 
     def get_pre_processor(self):
         return NumericalPreProcessor()
@@ -34,7 +35,7 @@ class NumericalDataHandler(AbstractDataHandler):
         return NumericalDataProcessor(self.nrInputDim, self.nrLabelDim, input_scalling=self.input_scalling, target_scalling=self.target_scalling)
 
     def get_configuration(self):
-        return NumericalConfiguration(self.LINES_PER_MAP)
+        return NumericalDataConf(self.LINES_PER_MAP)
 
     def get_new_statistics(self):
         return NumericalStats()

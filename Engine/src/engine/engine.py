@@ -98,9 +98,14 @@ class Engine(MRJob):
                 print('...Done.\n')
                 # get pre-processing results and update data handler
                 # (!) assuming there is only a single result
-                _, encoded_stats = pre_processor_job.parse_output_line(runner.stream_output().next())
-                stats = self.data_handler.get_new_statistics().decode(encoded_stats)
+                try:
+                    _, encoded_stats = pre_processor_job.parse_output_line(runner.stream_output().next())
+                    stats = self.data_handler.get_new_statistics().decode(encoded_stats)
+                except StopIteration:
+                    # no statistics
+                    stats = []
                 self.conf[const.DATA_HANDLER].set_statistics(stats)
+                self.conf[const.DATA_HANDLER].set_phase(const.PHASE_TRAINING)
                 # overwrite old configuration for training
                 serialization.save_object(const.CONF_FILE_NAME, self.conf)
 
@@ -129,6 +134,7 @@ class Engine(MRJob):
         @param _run_type: Optional: Specifies how to run the validation. 
         Default is Hadoop
         '''
+        self.data_handler.set_phase(const.PHASE_VALIDATION)
         validation_objects = { const.DATA_HANDLER: self.data_handler, const.TRAINED_ALG: alg, const.VALIDATOR: validator }
         serialization.save_object(const.CONF_FILE_NAME, validation_objects)
         job_args = self._create_job_args(_run_type)

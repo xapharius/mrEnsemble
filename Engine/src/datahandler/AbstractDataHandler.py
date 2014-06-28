@@ -5,6 +5,7 @@ Created on Jan 8, 2014
 '''
 
 from abc import ABCMeta, abstractmethod
+from engine import constants
 
 class AbstractDataHandler(object):
     '''
@@ -14,11 +15,17 @@ class AbstractDataHandler(object):
     '''
     __metaclass__ = ABCMeta
 
-    def __init__(self, params):
+    def __init__(self):
         '''
         Constructor
         '''
-        pass
+        self.phase = constants.internal.PHASE_PRE_PROC
+    
+    def set_phase(self, new_phase):
+        self.phase = new_phase
+    
+    def get_phase(self):
+        return self.phase
 
     @abstractmethod
     def get_pre_processor(self):
@@ -37,8 +44,9 @@ class AbstractDataHandler(object):
     @abstractmethod
     def get_configuration(self):
         '''
-        @return: Configuration specifying MrJob protocols for data exchange.
-        @rtype: AbstractConfiguration
+        @return: Configuration that specifies Hadoop InputFormats and MrJob 
+        protocols for pre-processing, training and validation.
+        @rtype: AbstractDataConf
         '''
         pass
 

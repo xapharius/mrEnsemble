@@ -5,7 +5,7 @@ Created on Jan 15, 2014
 '''
 from abc import ABCMeta, abstractmethod
 
-class AbstractConfiguration(object):
+class AbstractJobConf(object):
     '''
     Configuration to control data splitting and serialization.
     '''

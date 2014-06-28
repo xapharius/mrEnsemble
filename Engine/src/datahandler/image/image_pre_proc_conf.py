@@ -3,22 +3,22 @@ Created on Jan 15, 2014
 
 @author: Simon
 '''
-from datahandler.AbstractConfiguration import AbstractConfiguration
-import protocol
+from protocol.n_image_input_protocol import NImageInputProtocol
 import mrjob.protocol
+from datahandler.abstract_job_conf import AbstractJobConf
 
-class NumericalConfiguration(AbstractConfiguration):
+class ImagePreProcConf(AbstractJobConf):
     '''
     classdocs
     '''
-
-    INPUT_PROTOCOL = protocol.NLineCSVInputProtocol
+    
+    INPUT_PROTOCOL = NImageInputProtocol
     INTERNAL_PROTOCOL = mrjob.protocol.JSONProtocol
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
-    HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NLineFileInputFormat'
+    HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NWholeFileInputFormat'
 
-    def __init__(self, lines_per_map):
-        self.lines_per_map = lines_per_map
+    def __init__(self, files_per_map):
+        self.files_per_map = files_per_map
 
     def get_input_protocol(self):
         return self.INPUT_PROTOCOL
@@ -33,4 +33,4 @@ class NumericalConfiguration(AbstractConfiguration):
         return self.HADOOP_INPUT_FORMAT
 
     def get_job_conf(self):
-        return { 'hadoopml.fileinput.linespermap': self.lines_per_map }
+        return { 'hadoopml.fileinput.filespermap': self.files_per_map }

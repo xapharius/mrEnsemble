@@ -9,3 +9,7 @@ DATA_HANDLER   = 'data_handler'
 ALG_FACTORY    = 'alg_factory'
 TRAINED_ALG    = 'trained_alg'
 VALIDATOR      = 'validator'
+
+PHASE_PRE_PROC   = 'pre_proc_phase'
+PHASE_TRAINING   = 'training_phase'
+PHASE_VALIDATION = 'validation_phase'
