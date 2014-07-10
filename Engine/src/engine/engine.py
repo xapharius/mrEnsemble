@@ -126,14 +126,18 @@ class Engine(MRJob):
         return self.alg_factory.decode([trained_alg])[0]
 
 
-    def validate(self, alg, validator, _run_type=run_type.HADOOP):
+    def validate(self, alg, validator, _run_type=run_type.HADOOP, data_file=None):
         '''
         @param alg: Trained algorithm
         @param validator: Validator which should be used for validating the 
         trained model.
-        @param _run_type: Optional: Specifies how to run the validation. 
-        Default is Hadoop
+        @param _run_type: Optional (default is Hadoop), specifies how to run 
+        the validation.
+        @param data_file: Optional (default is same file as in training), 
+        specifies the data used for validation
         '''
+        if data_file is not None:
+            self.data_file = data_file
         self.data_handler.set_phase(const.PHASE_VALIDATION)
         validation_objects = { const.DATA_HANDLER: self.data_handler, const.TRAINED_ALG: alg, const.VALIDATOR: validator }
         serialization.save_object(const.CONF_FILE_NAME, validation_objects)

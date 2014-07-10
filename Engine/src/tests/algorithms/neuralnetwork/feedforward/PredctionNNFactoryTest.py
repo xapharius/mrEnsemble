@@ -80,7 +80,7 @@ class Test(unittest.TestCase):
         json_encoded = protocol.write("test_decode", obj_encoded)
         obj_encoded = protocol.read(json_encoded)
         
-        nnArr = nnFactory.decode([obj_encoded])
+        nnArr = nnFactory.decode([obj_encoded[1]])
         assert type(nnArr) == list, "decoded not as a list"
         assert type(nnArr[0]) == PredictionNN, "decoded not as LinearRegression"
     

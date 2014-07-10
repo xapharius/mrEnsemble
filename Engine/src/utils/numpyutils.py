@@ -39,10 +39,10 @@ def sigmoidScalar(x):
     '''
     if x > 100:
         # sys.stderr.write("sigmoid received value greater 100: " + str(x) + "\n")
-        return 1
+        return 1.
     elif x < -100:
         # sys.stderr.write("sigmoid received value smaller -100: " + str(x) + "\n")
-        return 0
+        return 0.
     return 1. / (1. + math.exp(-x))
 
 

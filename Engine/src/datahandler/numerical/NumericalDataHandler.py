@@ -26,13 +26,21 @@ class NumericalDataHandler(AbstractDataHandler):
         self.nrLabelDim = nrLabelDim
         self.input_scalling = input_scalling
         self.target_scalling = target_scalling
+        self.pre_proc = NumericalPreProcessor()
+        self.data_proc = NumericalDataProcessor(self.nrInputDim, self.nrLabelDim, input_scalling=self.input_scalling, target_scalling=self.target_scalling)
         super(NumericalDataHandler, self).__init__()
 
     def get_pre_processor(self):
-        return NumericalPreProcessor()
+        return self.pre_proc
+
+    def set_pre_processor(self, pre_proc):
+        self.pre_proc = pre_proc
 
     def get_data_processor(self):
-        return NumericalDataProcessor(self.nrInputDim, self.nrLabelDim, input_scalling=self.input_scalling, target_scalling=self.target_scalling)
+        return self.data_proc
+
+    def set_data_processor(self, data_proc):
+        self.data_proc = data_proc
 
     def get_configuration(self):
         return NumericalDataConf(self.LINES_PER_MAP)

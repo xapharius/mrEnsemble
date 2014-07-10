@@ -1,5 +1,6 @@
 import numpy as np
 import sys
+from utils import logging
 
 class NLineCSVInputProtocol(object):
     '''
@@ -15,9 +16,16 @@ class NLineCSVInputProtocol(object):
             key, value = data.split('\t', 1)
         else:
             key, value = 0, data
+        # try selecting a character as delimiter that is present in the data
         delimiter = ','
-        if value.find(';') != -1:
+        if value.find(',') == -1:
+            # nope, no commas
             delimiter = ';'
+            if value.find(';') == -1:
+                # and also no semi-colons, so use whitespace
+                # 'None' is the whitespace delimiter when using 'split'
+                delimiter = None
+        logging.info("Using " + ("whitespace" if delimiter is None else delimiter) + "as delimiter")
         lines = value.split('\\n')
         
         # test if there are any lines

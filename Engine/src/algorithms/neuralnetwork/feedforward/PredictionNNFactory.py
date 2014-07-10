@@ -5,7 +5,7 @@ Created on Feb 4, 2014
 '''
 
 from algorithms.AbstractAlgorithmFactory import AbstractAlgorithmFactory
-from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN
+from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN, SimpleUpdate
 import numpy as np
 
 class PredictionNNFactory(AbstractAlgorithmFactory):
@@ -15,18 +15,21 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
     '''
 
 
-    def __init__(self, arrLayerSizes, iterations=1):
+    def __init__(self, arrLayerSizes, iterations=1, update_method=SimpleUpdate(0.5), batch_update_size=1):
         '''
         Initializes the Factory and sets the parameters for the Model
         '''
         self.arrLayerSizes = arrLayerSizes
+        self.nrLayers = len(arrLayerSizes)
         self.iterations = iterations
+        self.batch_update_size = batch_update_size
+        self.update_method = update_method
 
     def get_instance(self):
         '''Create a PredictionNN Object
         :return: Object implementing AbstractAlgorithm
         '''
-        return PredictionNN(self.arrLayerSizes, self.iterations);
+        return PredictionNN(self.arrLayerSizes, self.iterations, self.update_method, self.batch_update_size)
 
     def aggregate(self, NNArr):
         '''Aggregate all PredictionNN from NNArr Prameter by AVERAGING
@@ -43,11 +46,11 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
         for NN in NNArr:
             for wIndex in range(len(NN.weightsArr)):
                 aggrWeightsArr[wIndex] += NN.weightsArr[wIndex]  
-        # divide by numer of networks
+        # divide by number of networks
         for wIndex in range(len(NN.weightsArr)):
                 aggrWeightsArr[wIndex] /= len(NNArr)
         
-        aggrNN = PredictionNN(self.arrLayerSizes)
+        aggrNN = self.get_instance()
         aggrNN.set_params(aggrWeightsArr)
         
         return aggrNN
