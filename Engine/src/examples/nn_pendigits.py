@@ -4,7 +4,7 @@ from algorithms.neuralnetwork.feedforward.PredictionNNFactory import \
     PredictionNNFactory
 from datahandler.numerical.NumericalDataHandler import NumericalDataHandler
 from datahandler.numerical.NumericalDataProcessor import NumericalDataProcessor
-from engine.constants.run_type import HADOOP, LOCAL, INLINE
+from engine.constants.run_type import HADOOP, LOCAL, INLINE, EMR
 from engine.engine import Engine
 import numpy as np
 from validator.PredictionValidator import PredictionValidator
@@ -20,10 +20,10 @@ if __name__ == '__main__':
     nr_params = 16
     nr_label_dim = 1
     arr_layer_sizes = [ nr_params, 16, 10 ]
-    iterations = 200
+    iterations = 800
     batch_update_size = 10
     update_method = Rprop(arr_layer_sizes, init_step=0.005)
-    run_type = HADOOP
+    run_type = EMR
     data_file = '../data/pendigits-training.txt'
     validation_data_file = '../data/pendigits-testing.txt'
     input_scalling = PenDigitsDataProcessor.NORMALIZE
@@ -45,7 +45,7 @@ if __name__ == '__main__':
     # 2. set data handler (pre-processing, normalization, data set creation)
     
     data_handler = NumericalDataHandler(nr_params, nr_label_dim)
-    data_handler.LINES_PER_MAP = 100
+    data_handler.LINES_PER_MAP = 300
     data_handler.set_data_processor(PenDigitsDataProcessor(nr_params, input_scalling=input_scalling))
     
     # 3. run
