@@ -1,14 +1,12 @@
-from mrjob.job import MRJob
 import sys
-from jobs.pre_processor_job import PreProcessorJob
 from jobs.validation_job import ValidationJob
 from utils import serialization
-from jobs.training_job import TrainingJob
 import constants.internal as const
 from constants import run_type
+from engine_job import EngineJob
 
 
-class Engine(MRJob):
+class Engine():
 
     def __init__(self, alg_factory, data_file, data_handler=None, data_handler_file=None, ml_lib_jar='libs/ml-hadoop-lib.jar', strict_protocols=True, verbose=False):
         '''
@@ -88,41 +86,19 @@ class Engine(MRJob):
         if self.skip_pre_processing:
             print("Skipping pre-processing\n")
         else:
-            pre_processor_job = PreProcessorJob(args=job_args)
-            pre_processor_job.set_up_logging(verbose=self.verbose, stream=sys.stdout)
+            engine_job = EngineJob(args=job_args)
+            engine_job.set_up_logging(verbose=self.verbose, stream=sys.stdout)
 
-            with pre_processor_job.make_runner() as runner:
+            with engine_job.make_runner() as runner:
                 print('Running pre-processing job...')
                 runner.run()
                 print('...Done.\n')
                 # get pre-processing results and update data handler
                 # (!) assuming there is only a single result
-                try:
-                    _, encoded_stats = pre_processor_job.parse_output_line(runner.stream_output().next())
-                    stats = self.data_handler.get_new_statistics().decode(encoded_stats)
-                except StopIteration:
-                    # no statistics
-                    stats = []
-                self.conf[const.DATA_HANDLER].set_statistics(stats)
-                self.conf[const.DATA_HANDLER].set_phase(const.PHASE_TRAINING)
-                # overwrite old configuration for training
-                serialization.save_object(const.CONF_FILE_NAME, self.conf)
-
-
-        # ----------- Training ------------------------------------------------
-
-        training_job = TrainingJob(args=job_args)
-
-        with training_job.make_runner() as runner:
-            print('Running training job...') 
-            runner.run()
-            print('...Done.\n')
-            # (!) assuming there is only a single result
-            _, trained_alg = training_job.parse_output_line(runner.stream_output().next())
+                _, trained_alg = engine_job.parse_output_line(runner.stream_output().next())
+                self.data_handler.set_statistics(trained_alg[1])
         
-        # TODO: cleanup pkl files
-        
-        return self.alg_factory.decode([trained_alg])[0]
+        return self.alg_factory.decode([trained_alg[0]])[0]
 
 
     def validate(self, alg, validator, _run_type=run_type.HADOOP, data_file=None):

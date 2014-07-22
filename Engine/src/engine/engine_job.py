@@ -2,7 +2,12 @@ import mrjob
 from mrjob.job import MRJob
 
 from utils import serialization, logging
-import constants.internal as const
+try:
+    import engine.constants.internal as const
+except ImportError:
+    import constants.internal as const
+from jobs.pre_processor_job import PreProcessorJob
+from jobs.training_job import TrainingJob
 
 
 class EngineJob(MRJob):
@@ -58,13 +63,18 @@ class EngineJob(MRJob):
     def get_trained_alg(self):
         return getattr(self, const.TRAINED_ALG)
 
-
     def steps(self):
+        self.pre_proc = PreProcessorJob(self)
+        self.training = TrainingJob(self)
         return [
             self.mr( mapper_init  = self.init,
-                     mapper       = self.mapper,
+                     mapper       = self.pre_proc.mapper,
                      reducer_init = self.init,
-                     reducer      = self.reducer )]
+                     reducer      = self.pre_proc.reducer ),
+            self.mr( mapper_init  = self.init,
+                     mapper       = self.training.mapper,
+                     reducer_init = self.init,
+                     reducer      = self.training.reducer ) ]
 
 
     def input_protocol(self):
@@ -109,3 +119,7 @@ class EngineJob(MRJob):
             custom_jobconf = self.job_conf.get_job_conf()
         orig_jobconf = super(EngineJob, self).jobconf()
         return mrjob.conf.combine_dicts(orig_jobconf, custom_jobconf)
+
+
+if __name__ == '__main__':
+    EngineJob.run()

@@ -1,11 +1,11 @@
 from mrjob.job import MRJob
 import mrjob
 import sys
-import protocol
+from protocol.NLineInputProtocol import NLineInputProtocol
 
 class MRWordCount(MRJob):
 
-    INPUT_PROTOCOL = protocol.NLineInputProtocol
+    INPUT_PROTOCOL = NLineInputProtocol
     INTERNAL_PROTOCOL = mrjob.protocol.JSONProtocol
     OUTPUT_PROTOCOL = mrjob.protocol.JSONProtocol
     HADOOP_INPUT_FORMAT = 'hadoopml.libfileinput.NLineFileInputFormat'
@@ -28,6 +28,9 @@ class MRWordCount(MRJob):
 
     def reducer(self, key, values):
         yield key, sum(values)
+
+    def steps(self):
+        return [ self.mr( mapper = self.mapper, reducer = self.reducer ) ]
 
 
 if __name__ == '__main__':

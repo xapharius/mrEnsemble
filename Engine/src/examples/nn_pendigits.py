@@ -20,10 +20,10 @@ if __name__ == '__main__':
     nr_params = 16
     nr_label_dim = 1
     arr_layer_sizes = [ nr_params, 16, 10 ]
-    iterations = 800
+    iterations = 50
     batch_update_size = 10
     update_method = Rprop(arr_layer_sizes, init_step=0.005)
-    run_type = EMR
+    run_type = HADOOP
     data_file = '../data/pendigits-training.txt'
     validation_data_file = '../data/pendigits-testing.txt'
     input_scalling = PenDigitsDataProcessor.NORMALIZE
@@ -56,12 +56,12 @@ if __name__ == '__main__':
     validation_stats = engine.validate(trained_alg, PredictionValidator(), _run_type=run_type, data_file=validation_data_file)
     targets = np.array(validation_stats['targets'])
     pred = [ np.argmax(p) for p in np.array(validation_stats['pred']) ]
-    
+     
     conf_matrix = np.zeros((10,10))
     conf_matrix = np.concatenate( ( [np.arange(0, 10)], conf_matrix ), axis=0)
     conf_matrix = np.concatenate( ( np.transpose([np.arange(-1, 10)]), conf_matrix ), axis=1)
     for i in range(len(targets)):
         conf_matrix[ np.where( targets[i]==1 )[0][0]+1, pred[i]+1 ] += 1
-    
+     
     print("Detection rate: " + str( np.sum(np.diagonal(conf_matrix[1:,1:])) / len(targets)))
     print(str(conf_matrix))

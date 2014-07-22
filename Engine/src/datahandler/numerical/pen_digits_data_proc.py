@@ -7,6 +7,7 @@ from datahandler.AbstractDataProcessor import AbstractDataProcessor
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
 import numpy as np 
 from utils import logging
+from datahandler.numerical.numerical_stats import NumericalStats
 
 class PenDigitsDataProcessor(AbstractDataProcessor):
     '''
@@ -32,6 +33,7 @@ class PenDigitsDataProcessor(AbstractDataProcessor):
         '''
         Normalize local data
         '''
+        stats = NumericalStats().decode(stats)
         input_stats = stats.get_input_stats()
 
         try:
