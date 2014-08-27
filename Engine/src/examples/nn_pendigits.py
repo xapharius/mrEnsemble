@@ -9,7 +9,9 @@ from engine.engine import Engine
 import numpy as np
 from validator.PredictionValidator import PredictionValidator
 from datahandler.numerical.pen_digits_data_proc import PenDigitsDataProcessor
-from algorithms.neuralnetwork.feedforward.PredictionNN import Rprop
+from algorithms.neuralnetwork.feedforward.PredictionNN import Rprop,\
+    PredictionNN
+from algorithms.neuralnetwork.feedforward.BaggedPredictionNN import BaggedPredictionNN
 
 
 if __name__ == '__main__':
@@ -20,10 +22,11 @@ if __name__ == '__main__':
     nr_params = 16
     nr_label_dim = 1
     arr_layer_sizes = [ nr_params, 16, 10 ]
-    iterations = 800
+    iterations = 400
     batch_update_size = 10
+    lines_per_map = 300
     update_method = Rprop(arr_layer_sizes, init_step=0.005)
-    run_type = EMR
+    run_type = HADOOP
     data_file = '../data/pendigits-training.txt'
     validation_data_file = '../data/pendigits-testing.txt'
     input_scalling = PenDigitsDataProcessor.NORMALIZE
@@ -33,6 +36,7 @@ if __name__ == '__main__':
           + "\n           layers: " + str(arr_layer_sizes)
           + "\n       iterations: " + str(iterations)
           + "\n       batch size: " + str(batch_update_size)
+          + "\n    lines per map: " + str(lines_per_map)
           + "\n    update method: " + str(update_method.__class__)
           + "\n   input scalling: " + str(input_scalling)
           + "\n         run type: " + run_type
@@ -45,23 +49,25 @@ if __name__ == '__main__':
     # 2. set data handler (pre-processing, normalization, data set creation)
     
     data_handler = NumericalDataHandler(nr_params, nr_label_dim)
-    data_handler.LINES_PER_MAP = 300
+    data_handler.LINES_PER_MAP = lines_per_map
     data_handler.set_data_processor(PenDigitsDataProcessor(nr_params, input_scalling=input_scalling))
     
     # 3. run
     engine = Engine(pred_nn, data_file, data_handler=data_handler)
-    trained_alg = engine.start(_run_type=run_type)
+    trained_algs = engine.start(_run_type=run_type)
+    
+    trained_alg = BaggedPredictionNN(arr_weights=trained_algs)
     
     # 4. validate result
     validation_stats = engine.validate(trained_alg, PredictionValidator(), _run_type=run_type, data_file=validation_data_file)
     targets = np.array(validation_stats['targets'])
-    pred = [ np.argmax(p) for p in np.array(validation_stats['pred']) ]
+    pred = np.array(validation_stats['pred'])
     
     conf_matrix = np.zeros((10,10))
     conf_matrix = np.concatenate( ( [np.arange(0, 10)], conf_matrix ), axis=0)
     conf_matrix = np.concatenate( ( np.transpose([np.arange(-1, 10)]), conf_matrix ), axis=1)
     for i in range(len(targets)):
-        conf_matrix[ np.where( targets[i]==1 )[0][0]+1, pred[i]+1 ] += 1
+        conf_matrix[ np.where( targets[i]==1 )[0][0]+1, np.where( pred[i]==1 )[0][0]+1 ] += 1
     
     print("Detection rate: " + str( np.sum(np.diagonal(conf_matrix[1:,1:])) / len(targets)))
     print(str(conf_matrix))

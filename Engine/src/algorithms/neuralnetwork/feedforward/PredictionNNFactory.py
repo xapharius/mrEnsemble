@@ -7,6 +7,7 @@ Created on Feb 4, 2014
 from algorithms.AbstractAlgorithmFactory import AbstractAlgorithmFactory
 from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN, SimpleUpdate
 import numpy as np
+from algorithms.neuralnetwork.feedforward.BaggedPredictionNN import BaggedPredictionNN
 
 class PredictionNNFactory(AbstractAlgorithmFactory):
     '''
@@ -37,29 +38,36 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
         :return combined PredictionNN
         '''
         
-        aggrWeightsArr = []
-        for layer in range(len(self.arrLayerSizes)-1):
-            weights = np.zeros((self.arrLayerSizes[layer]+1, self.arrLayerSizes[layer+1]))
-            aggrWeightsArr.append(weights)
-        
-        # for each network add respective layers
-        for NN in NNArr:
-            for wIndex in range(len(NN.weightsArr)):
-                aggrWeightsArr[wIndex] += NN.weightsArr[wIndex]  
-        # divide by number of networks
-        for wIndex in range(len(NN.weightsArr)):
-                aggrWeightsArr[wIndex] /= len(NNArr)
-        
-        aggrNN = self.get_instance()
-        aggrNN.set_params(aggrWeightsArr)
-        
-        return aggrNN
+#         aggrWeightsArr = []
+#         for layer in range(len(self.arrLayerSizes)-1):
+#             weights = np.zeros((self.arrLayerSizes[layer]+1, self.arrLayerSizes[layer+1]))
+#             aggrWeightsArr.append(weights)
+#         
+#         # for each network add respective layers
+#         for NN in NNArr:
+#             for wIndex in range(len(NN.weightsArr)):
+#                 aggrWeightsArr[wIndex] += NN.weightsArr[wIndex]  
+#         # divide by number of networks
+#         for wIndex in range(len(NN.weightsArr)):
+#                 aggrWeightsArr[wIndex] /= len(NNArr)
+#         
+#         aggrNN = self.get_instance()
+#         aggrNN.set_params(aggrWeightsArr)
+        bagged = BaggedPredictionNN(nns=NNArr)
+        return bagged
 
     def encode(self, alg_instance):
         # bring nparrays to list type (to be json encodable)
         weightsArr = []
-        for npArr in alg_instance.weightsArr:
-            weightsArr.append(npArr.tolist())
+        try:
+            for npArr in alg_instance.weightsArr:
+                weightsArr.append(npArr.tolist())
+        except AttributeError:
+            for nn in alg_instance.nets:
+                nn_weights = []
+                for layer_weights in nn.weightsArr:
+                    nn_weights.append(layer_weights.tolist())
+                weightsArr.append(nn_weights)
         return weightsArr
 
     def decode(self, encoded):

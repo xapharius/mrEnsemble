@@ -54,7 +54,10 @@ def sigmoidNPArray(npArr):
     '''
     func = np.vectorize(sigmoidScalar)
     return func(npArr)
-
+    
+def sigmoidDeriv(x):
+    return x * (1. - x)
+    
 def sigmoidDerivScalar(x):
     '''
     Given a scalar (e.g the weighted sum) compute the derivative of its sigmoid
@@ -102,3 +105,16 @@ def to_list(arr):
         for row in arr:
             result.append(row.tolist())
         return result
+
+
+def tanhDeriv(y):
+    """
+    Calculate the derivative for the given tanh value (y = tanh(x))
+    :param y: tanh function value
+    :return: Derivative for given value
+    """
+    return 1 - np.power(y, 2)
+
+
+def rot180(arr):
+    return np.rot90(np.rot90(arr))
