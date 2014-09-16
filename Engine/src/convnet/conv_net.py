@@ -9,13 +9,16 @@ import os
 import skimage.io as io
 from skimage import img_as_float
 import matplotlib.pyplot as plt
-from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN
+from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN, \
+    SimpleUpdate
 import scipy.signal.signaltools as signal
+from datahandler.numerical.NumericalDataSet import NumericalDataSet
 import utils.numpyutils as nputils
 from layers import ConvLayer, MaxPoolLayer
+from utils import logging
 
 
-class ConvNet(object):
+class ConvNet2(object):
     """
     classdocs
     """
@@ -179,74 +182,142 @@ class ConvNet(object):
         return conv_layer_updates, sub_layer_updates, mlp_weight_updates
 
 
+class ConvNet(object):
 
-def load_images(path):
+    def __init__(self, iterations=1, learning_rate=0.5, topo=[('c', 3, 4), ('p', 2), ('c', 3, 4), ('p', 9), ('mlp', 4, 4, 2)]):
+        """
+
+        :param iterations:
+        :param topo
+        :return:
+        """
+        self.iterations = iterations
+        self.learning_rate = learning_rate
+        self.layers = []
+        self.conv_layers = []
+        num_prev_maps = 1
+        # parse topology
+        for layer in topo:
+            # convolutional layer
+            if layer[0] == 'c':
+                conv_layer = ConvLayer(num_prev_maps=num_prev_maps, kernel_size=layer[1], num_maps=layer[2])
+                self.add_layer(conv_layer)
+                self.conv_layers.append(conv_layer)
+                num_prev_maps = layer[2]
+            # pooling layer
+            elif layer[0] == 'p':
+                self.add_layer(MaxPoolLayer(size=layer[1]))
+            # multilayer perceptron
+            elif layer[0] == 'mlp':
+                self.mlp = PredictionNN(list(layer[1:]), update_method=SimpleUpdate(self.learning_rate))
+
+    def add_layer(self, layer):
+        """
+
+        :param layer:
+        :return:
+        """
+        self.layers.append(layer)
+
+    def feedforward(self, inputs):
+        """
+        Feed input forward through net calculating the ouput of each layer.
+        :param inputs: 2D numpy array (usually an image)
+        :return: List of numpy arrays each representing the output of a layer
+        except the first array in the list which is the input.
+        """
+        outputs = [inputs]
+        for layer in self.layers:
+            outputs.append(layer.feedforward(outputs[-1]))
+        outputs.extend(self.mlp.feedforward(outputs[-1])[1:])
+        return outputs
+
+    def predict(self, data_set):
+        """
+        Predicts targets for given data set.
+        @param data_set: data Set inheriting AbstractDataSet
+        :return: List of predictions, i.e. output of this net for each
+        observation in the data set.
+        """
+        predictions = []
+        # loop through dataset
+        for observation, _ in data_set.gen_observations( ):
+            # make sure it is a numpy array
+            input_arr = np.array(observation)
+            outputs = self.feedforward(input_arr)
+            predictions.append(outputs[-1])
+        return predictions
+
+    def train(self, data_set):
+        for it in range(self.iterations):
+            # randomly select observations as many times as there are
+            # observations
+            logging.info("Iteration #" + str(it + 1))
+            it_error = 0
+            for o in range(data_set.get_nr_observations()):
+                input_arr, target_arr = data_set.rand_observation()
+                # feed-forward
+                outputs = self.feedforward(input_arr)
+                current_error = nputils.calc_squared_error(target_arr, outputs[-1])
+                it_error += current_error
+
+                # backpropagation
+                mlp_outputs = outputs[-len(self.mlp.arrLayerSizes):]
+                mlp_deltas = self.mlp.backpropagation(mlp_outputs, target_arr)
+                # calculate backpropagated error of first mlp layer
+                backprop_error = np.array([ [x] for x in np.dot(self.mlp.weightsArr[0], mlp_deltas[0].transpose()) ])
+                for layer in reversed(self.layers):
+                    backprop_error = layer.backpropagate(backprop_error)
+                for conv_layer in self.conv_layers:
+                    conv_layer.calc_gradients()
+                    conv_layer.update(self.learning_rate)
+
+            logging.info("  Avg. error: " + str(it_error / data_set.get_nr_observations()) + "\n")
+
+
+def load_images(path, max_num=-1):
     images = []
     for _file in os.listdir(path):
         if _file.endswith('.png'):
             img = io.imread(path + '/' + _file, as_grey=True)
             images.append(img_as_float(img))
+            if len(images) == max_num:
+                break
     return images
 
 
 if __name__ == '__main__':
     
-    faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/faces/')
+    faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/faces/', max_num=50)
+    non_faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/nonfaces/', max_num=50)
+    inputs = np.array(faces + non_faces)
+    targets = np.array([[1, 0] for _ in range(len(faces))] + [[0, 1] for _ in range(len(non_faces))])
+    data_set = NumericalDataSet(inputs, targets)
 
-    # input size is 24x24
+    # 24x24 -> C(3): 22x22 -> P(2): 11x11 -> C(3): 9x9 -> P(3): 3x3 -> C(3): 1x1
+    net = ConvNet(iterations=40, learning_rate=0.001, topo=[('c', 3, 4), ('p', 2), ('c', 3, 4), ('p', 3), ('c', 3, 4), ('mlp', 4, 4, 4, 2)])
+    net.train(data_set)
+    preds = net.predict(data_set)
+    print preds
 
-    # out size is 22x22
-    conv_layer1 = ConvLayer(num_prev_maps=1, num_maps=4, kernel_size=3)
-    # out size is 11x11
-    pool_layer1 = MaxPoolLayer(size=2)
-    # out size is 9x9
-    conv_layer2 = ConvLayer(num_prev_maps=conv_layer1.num_maps, num_maps=4, kernel_size=3)
-    # out size is 1x1
-    pool_layer2 = MaxPoolLayer(size=9)
-
-    mlp = PredictionNN([ 4, 4, 2 ])
-
-    convolved1 = conv_layer1.feedforward(faces[0])
-    pooled1 = pool_layer1.feedforward(convolved1)
-
-    convolved2 = conv_layer2.feedforward(pooled1)
-    pooled2 = pool_layer2.feedforward(convolved2)
-
-    mlp_out = mlp.feedforward(pooled2)
-
-
-    # backpropagation
-    mlp_deltas = mlp.backpropagation(mlp_out, np.array([[1, 0]]))
-    error = np.array([ [x] for x in np.dot(mlp.weightsArr[0], mlp_deltas[0].transpose()) ])
-    in_error = conv_layer1.backpropagate(pool_layer1.backpropagate(conv_layer2.backpropagate(pool_layer2.backpropagate(error))))
-
-    conv_layer1.calc_gradients()
-    conv_layer2.calc_gradients()
-
-    # net = ConvNet([ 4, 6, 8 ], [ 3, 3, 3 ], [ 2, 2, 6 ], PredictionNN([ 8, 8, 2 ]))
+    # fig = plt.figure(1)
+    # plt.set_cmap('gray')
+    # num_rows = 6
+    # num_cols = 4
+    # fig.add_subplot(num_rows, num_cols, 1)
+    # plt.imshow(faces[0])
+    # for fm_idx in range(4):
+    #     fig.add_subplot(num_rows, num_cols, num_cols*1 + fm_idx + 1)
+    #     plt.imshow(convolved1[fm_idx, :, :])
+    #     fig.add_subplot(num_rows, num_cols, num_cols*2 + fm_idx + 1)
+    #     plt.imshow(pooled1[fm_idx, :, :])
+    #     fig.add_subplot(num_rows, num_cols, num_cols*3 + fm_idx + 1)
+    #     plt.imshow(convolved2[fm_idx, :, :])
+    #     fig.add_subplot(num_rows, num_cols, num_cols*4 + fm_idx + 1)
+    #     plt.imshow(np.array([[pooled2[0, fm_idx]]]), vmin=0, vmax=1)
+    # fig.add_subplot(num_rows, num_cols, 21)
+    # plt.imshow(np.array([[mlp_out[2][0, 0]]]), vmin=0, vmax=1)
+    # fig.add_subplot(num_rows, num_cols, 22)
+    # plt.imshow(np.array([[mlp_out[2][0, 1]]]), vmin=0, vmax=1)
     #
-    # conv_activ, sub_activ, mlp_activ = net.feedforward(faces[0])
-    # conv_layer_deltas, sub_layer_deltas, mlp_deltas = net.backpropagation(conv_activ, sub_activ, mlp_activ, np.array([[1,0]]))
-    # conv_layer_updates, sub_layer_updates, mlp_updates = net.calculate_weight_update(conv_layer_deltas, sub_layer_deltas, mlp_deltas, conv_activ, sub_activ, mlp_activ)
-    
-    fig = plt.figure(1)
-    plt.set_cmap('gray')
-    num_rows = 6
-    num_cols = 4
-    fig.add_subplot(num_rows, num_cols, 1)
-    plt.imshow(faces[0])
-    for fm_idx in range(4):
-        fig.add_subplot(num_rows, num_cols, num_cols*1 + fm_idx + 1)
-        plt.imshow(convolved1[fm_idx, :, :])
-        fig.add_subplot(num_rows, num_cols, num_cols*2 + fm_idx + 1)
-        plt.imshow(pooled1[fm_idx, :, :])
-        fig.add_subplot(num_rows, num_cols, num_cols*3 + fm_idx + 1)
-        plt.imshow(convolved2[fm_idx, :, :])
-        fig.add_subplot(num_rows, num_cols, num_cols*4 + fm_idx + 1)
-        plt.imshow(np.array([[pooled2[0, fm_idx]]]), vmin=0, vmax=1)
-    fig.add_subplot(num_rows, num_cols, 21)
-    plt.imshow(np.array([[mlp_out[2][0, 0]]]), vmin=0, vmax=1)
-    fig.add_subplot(num_rows, num_cols, 22)
-    plt.imshow(np.array([[mlp_out[2][0, 1]]]), vmin=0, vmax=1)
-
-    plt.show()
+    # plt.show()

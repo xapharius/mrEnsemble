@@ -118,3 +118,8 @@ def tanhDeriv(y):
 
 def rot180(arr):
     return np.rot90(np.rot90(arr))
+
+
+
+def calc_squared_error(expected, actual):
+    return np.sum( 0.5 * np.power(expected - actual, 2))

@@ -43,6 +43,7 @@ class ConvLayer(object):
         self.inputs = None
         self.outputs = None
         self.deltas = None
+        self.gradients = None
 
     def feedforward(self, inputs):
         """
@@ -56,7 +57,8 @@ class ConvLayer(object):
             inputs = np.array([inputs])
         self.inputs = np.copy(inputs)
         in_size = np.shape(self.inputs[0])
-        self.outputs = np.zeros((self.num_maps, in_size[0] - self.kernel_size + 1, in_size[1] - self.kernel_size + 1))
+        out_size = in_size[0] - self.kernel_size + 1
+        self.outputs = np.zeros((self.num_maps, out_size, out_size))
         # go through all feature maps of this layer
         for fm_idx in range(self.num_maps):
             # convolve inputs, add bias and apply activation function
@@ -67,6 +69,8 @@ class ConvLayer(object):
                 prev_out = self.inputs[prev_fm_idx]
                 out = signal.convolve2d(prev_out, kernel, mode='valid')
                 self.outputs[fm_idx, :, :] += self.activation_func(out + bias)
+        if out_size == 1:
+            return np.array([ self.outputs[:, 0, 0] ])
         return self.outputs
 
     def backpropagate(self, error):
@@ -90,17 +94,22 @@ class ConvLayer(object):
                 # convolve delta with kernel using 'full' mode, to obtain the
                 # error for the feature map in the previous layer
                 kernel = self.weights[fm_idx, prev_fm_idx]
+                # Todo: could use correlate2d
                 backprop_error[prev_fm_idx] += nputils.rot180(signal.convolve2d(nputils.rot180(self.deltas[fm_idx]), kernel, mode='full'))
 
         return backprop_error
 
     def calc_gradients(self):
-        gradients = np.zeros((self.num_maps, self.num_prev_maps, self.kernel_size, self.kernel_size))
+        self.gradients = np.zeros((self.num_maps, self.num_prev_maps, self.kernel_size, self.kernel_size))
         for fm_idx in range(self.num_maps):
             for prev_fm_idx in range(self.num_prev_maps):
-                gradients[fm_idx, prev_fm_idx, :, :] = signal.convolve2d(self.inputs[prev_fm_idx], self.deltas[fm_idx], mode='valid')
-        return gradients
+                self.gradients[fm_idx, prev_fm_idx, :, :] = signal.convolve2d(self.inputs[prev_fm_idx], self.deltas[fm_idx], mode='valid')
 
+    def update(self, learning_rate):
+        for fm_idx in range(self.num_maps):
+            for prev_fm_idx in range(self.num_prev_maps):
+                self.weights[fm_idx, prev_fm_idx] -= learning_rate * self.gradients[fm_idx, prev_fm_idx, :, :]
+                self.biases[fm_idx, prev_fm_idx] -= learning_rate * np.sum(self.gradients[fm_idx, prev_fm_idx, :, :])
 
 class MaxPoolLayer(object):
     """

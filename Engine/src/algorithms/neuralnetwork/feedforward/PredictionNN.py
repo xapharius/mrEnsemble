@@ -23,6 +23,7 @@ class AbstractUpdateMethod( object ):
 
 
 class SimpleUpdate( AbstractUpdateMethod ):
+
     def __init__( self, learning_rate ):
         '''
         @param learning_rate: Step width for gradient descent
@@ -36,6 +37,7 @@ class SimpleUpdate( AbstractUpdateMethod ):
 
 
 class Rprop( AbstractUpdateMethod ):
+
     def __init__( self, layer_sizes, rate_pos=1.2, rate_neg=0.5,
                   init_step=0.0001, min_step=0.000001, max_step=50. ):
         self.rate_pos = rate_pos
@@ -254,13 +256,12 @@ class PredictionNN( AbstractAlgorithm ):
                     for j in range( len( batch_updates ) ):
                         batch_updates[ j ].fill( 0 )
 
-            logging.info( "  Avg. error: " + str(
-                it_error / dataSet.get_nr_observations( ) ) + "\n" )
+            logging.info("  Avg. error: " + str(it_error / dataSet.get_nr_observations()) + "\n")
 
 
     def predict( self, dataSet ):
         '''
-        Predicts targets for given dataset
+        Predicts targets for given data set
         @param _dataSet: data Set inheriting AbstractDataSet
         @return: outputs from the feed forward on each row 
         @rtype: list of numpy.ndarray (nr_obs * nr_output_neurons)
