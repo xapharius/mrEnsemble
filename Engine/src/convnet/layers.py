@@ -36,8 +36,9 @@ class ConvLayer(object):
         self.num_prev_maps = num_prev_maps
         self.num_maps = num_maps
         self.kernel_size = kernel_size
-        self.weights = np.random.rand(num_maps, num_prev_maps, kernel_size, kernel_size)-0.5
-        self.biases = np.random.rand(num_maps, num_prev_maps)-0.5
+        fan_in = np.sqrt(kernel_size * kernel_size * num_prev_maps)
+        self.weights = np.random.uniform(low=-1/fan_in, high=1/fan_in, size=(num_maps, num_prev_maps, kernel_size, kernel_size))
+        self.biases = np.zeros(num_maps) # np.random.rand(num_maps)-0.5
         self.activation_func = activation_func
         self.deriv_activation_func = deriv_activation_func
         self.inputs = None
@@ -61,14 +62,15 @@ class ConvLayer(object):
         self.outputs = np.zeros((self.num_maps, out_size, out_size))
         # go through all feature maps of this layer
         for fm_idx in range(self.num_maps):
-            # convolve inputs, add bias and apply activation function
-            # sum all these inputs to get the feature maps output
+            bias = self.biases[fm_idx]
+            conv_out = np.zeros((out_size, out_size))
+            # convolve inputs with weights and sum the results
             for prev_fm_idx in range(self.num_prev_maps):
                 kernel = self.weights[fm_idx, prev_fm_idx]
-                bias = self.biases[fm_idx, prev_fm_idx]
                 prev_out = self.inputs[prev_fm_idx]
-                out = signal.convolve2d(prev_out, kernel, mode='valid')
-                self.outputs[fm_idx, :, :] += self.activation_func(out + bias)
+                conv_out += signal.convolve2d(prev_out, kernel, mode='valid')
+            # add bias and apply activation function for final output
+            self.outputs[fm_idx, :, :] = self.activation_func(conv_out + bias)
         if out_size == 1:
             return np.array([ self.outputs[:, 0, 0] ])
         return self.outputs
@@ -107,9 +109,9 @@ class ConvLayer(object):
 
     def update(self, learning_rate):
         for fm_idx in range(self.num_maps):
+            self.biases[fm_idx] -= learning_rate * np.sum(self.gradients[fm_idx, :, :, :])
             for prev_fm_idx in range(self.num_prev_maps):
                 self.weights[fm_idx, prev_fm_idx] -= learning_rate * self.gradients[fm_idx, prev_fm_idx, :, :]
-                self.biases[fm_idx, prev_fm_idx] -= learning_rate * np.sum(self.gradients[fm_idx, prev_fm_idx, :, :])
 
 class MaxPoolLayer(object):
     """

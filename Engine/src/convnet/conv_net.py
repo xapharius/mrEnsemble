@@ -209,7 +209,7 @@ class ConvNet(object):
                 self.add_layer(MaxPoolLayer(size=layer[1]))
             # multilayer perceptron
             elif layer[0] == 'mlp':
-                self.mlp = PredictionNN(list(layer[1:]), update_method=SimpleUpdate(self.learning_rate))
+                self.mlp = PredictionNN(list(layer[1:]), update_method=SimpleUpdate(self.learning_rate), activation_function=np.tanh, deriv_activation_function=nputils.tanhDeriv)
 
     def add_layer(self, layer):
         """
@@ -291,11 +291,11 @@ if __name__ == '__main__':
     faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/faces/', max_num=50)
     non_faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/nonfaces/', max_num=50)
     inputs = np.array(faces + non_faces)
-    targets = np.array([[1, 0] for _ in range(len(faces))] + [[0, 1] for _ in range(len(non_faces))])
+    targets = np.array([ [1] for _ in range(len(faces))] + [ [0] for _ in range(len(non_faces))])
     data_set = NumericalDataSet(inputs, targets)
 
     # 24x24 -> C(3): 22x22 -> P(2): 11x11 -> C(3): 9x9 -> P(3): 3x3 -> C(3): 1x1
-    net = ConvNet(iterations=40, learning_rate=0.001, topo=[('c', 3, 4), ('p', 2), ('c', 3, 4), ('p', 3), ('c', 3, 4), ('mlp', 4, 4, 4, 2)])
+    net = ConvNet(iterations=20, learning_rate=0.001, topo=[('c', 3, 4), ('p', 2), ('c', 3, 4), ('p', 3), ('c', 3, 4), ('mlp', 4, 1)])
     net.train(data_set)
     preds = net.predict(data_set)
     print preds
