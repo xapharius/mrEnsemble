@@ -6,6 +6,7 @@ Created on Aug 26, 2014
 import numpy as np
 import scipy.signal.signaltools as signal
 import utils.numpyutils as nputils
+import skimage.transform as trans
 
 
 class ConvLayer(object):
@@ -58,12 +59,12 @@ class ConvLayer(object):
             inputs = np.array([inputs])
         self.inputs = np.copy(inputs)
         in_size = np.shape(self.inputs[0])
-        out_size = in_size[0] - self.kernel_size + 1
-        self.outputs = np.zeros((self.num_maps, out_size, out_size))
+        out_size = (in_size[0] - self.kernel_size + 1, in_size[1] - self.kernel_size + 1)
+        self.outputs = np.zeros((self.num_maps, out_size[0], out_size[1]))
         # go through all feature maps of this layer
         for fm_idx in range(self.num_maps):
             bias = self.biases[fm_idx]
-            conv_out = np.zeros((out_size, out_size))
+            conv_out = np.zeros(out_size)
             # convolve inputs with weights and sum the results
             for prev_fm_idx in range(self.num_prev_maps):
                 kernel = self.weights[fm_idx, prev_fm_idx]
@@ -90,8 +91,8 @@ class ConvLayer(object):
         self.deltas = np.zeros((self.num_maps, out_size[0], out_size[1]))
         for fm_idx in range(self.num_maps):
             fm_error = error[fm_idx]
-            self.deltas[fm_idx] = fm_error * self.deriv_activation_func(self.outputs[fm_idx])
-            # calculate error for previous layer
+            self.deltas[fm_idx] = np.array([np.sum(fm_error * self.deriv_activation_func(self.outputs[fm_idx]), axis=1)]).transpose()
+            # calculate error for previous layer: the sum of all
             for prev_fm_idx in range(self.num_prev_maps):
                 # convolve delta with kernel using 'full' mode, to obtain the
                 # error for the feature map in the previous layer
@@ -127,6 +128,7 @@ class MaxPoolLayer(object):
         :param size: Size of the square that is used for max pooling
         """
         self.size = size
+        self.in_shape = None
 
     def feedforward(self, inputs):
         """
@@ -138,9 +140,9 @@ class MaxPoolLayer(object):
         each scaled down by this layer's factor. Output is 1D (row-vector) iff
         the output of a feature map is only a single pixel.
         """
-        in_size = np.shape(inputs)
-        fm_out_shape = (in_size[1] / self.size, in_size[2] / self.size)
-        result = np.zeros((in_size[0], fm_out_shape[0], fm_out_shape[1]))
+        self.in_shape = np.shape(inputs)
+        fm_out_shape = (np.ceil(self.in_shape[1] / float(self.size)), np.ceil(self.in_shape[2] / float(self.size)))
+        result = np.zeros((self.in_shape[0], fm_out_shape[0], fm_out_shape[1]))
         for fm_idx in range(np.shape(inputs)[0]):
             result[fm_idx, :, :] = max_pool(inputs[fm_idx], self.size)
         # when there is only a single pixel as output, return a vector
@@ -150,9 +152,9 @@ class MaxPoolLayer(object):
 
     def backpropagate(self, error):
         error_shape = np.shape(error)
-        backprop_error = np.zeros((error_shape[0], error_shape[1]*self.size, error_shape[2]*self.size))
+        backprop_error = np.zeros((error_shape[0], self.in_shape[1], self.in_shape[2]))
         for fm_idx in range(error_shape[0]):
-            backprop_error[fm_idx, :, :] = tile(error[fm_idx], self.size)
+            backprop_error[fm_idx, :, :] = trans.resize(error[fm_idx], (self.in_shape[1], self.in_shape[2]))
         return backprop_error
 
 
@@ -166,6 +168,14 @@ def max_pool(img, size):
     :return: Max-pooled 2D numpy array scaled by 1/size
     """
     img_shape = np.shape(img)
+    # pad vertically with -1
+    if img_shape[0] % size != 0:
+        img = np.vstack((img, np.ones((size - img_shape[0] % size, img_shape[1])) * -1))
+        img_shape = np.shape(img)
+    # pad horizontally with -1
+    if img_shape[1] % size != 0:
+        img = np.hstack((img, np.ones((img_shape[0], size - img_shape[1] % size)) * -1))
+        img_shape = np.shape(img)
     result = np.zeros((img_shape[0] / size, img_shape[1] / size))
     for row in range(0, img_shape[0]-size+1, size):
         for col in range(0, img_shape[1]-size+1, size):

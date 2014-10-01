@@ -8,6 +8,7 @@ import scipy.ndimage as nd
 import os
 import skimage.io as io
 from skimage import img_as_float
+from skimage.transform import resize
 import matplotlib.pyplot as plt
 from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN, \
     SimpleUpdate
@@ -261,9 +262,12 @@ class ConvNet(object):
                 current_error = nputils.calc_squared_error(target_arr, outputs[-1])
                 it_error += current_error
 
-                # backpropagation
+                # mlp backpropagation and gradient descent
                 mlp_outputs = outputs[-len(self.mlp.arrLayerSizes):]
                 mlp_deltas = self.mlp.backpropagation(mlp_outputs, target_arr)
+                mlp_weight_updates = self.mlp.calculate_weight_updates(mlp_deltas, mlp_outputs)
+                self.mlp.update_method.perform_update(self.mlp.weightsArr, mlp_weight_updates, current_error)
+                # convolutional layer backpropagation and gradient descent
                 # calculate backpropagated error of first mlp layer
                 backprop_error = np.array([ [x] for x in np.dot(self.mlp.weightsArr[0], mlp_deltas[0].transpose()) ])
                 for layer in reversed(self.layers):
@@ -275,30 +279,47 @@ class ConvNet(object):
             logging.info("  Avg. error: " + str(it_error / data_set.get_nr_observations()) + "\n")
 
 
-def load_images(path, max_num=-1):
+def load_images(path, max_num=-1, scale_to=None):
     images = []
     for _file in os.listdir(path):
         if _file.endswith('.png'):
-            img = io.imread(path + '/' + _file, as_grey=True)
-            images.append(img_as_float(img))
+            img = img_as_float(io.imread(path + '/' + _file, as_grey=True))
+            if scale_to is not None:
+                img = resize(img, scale_to)
+            images.append(img)
             if len(images) == max_num:
                 break
     return images
 
+def load_image_and_split(path, single_size):
+    images = []
+    img = img_as_float(io.imread(path, as_grey=True))
+    img_shape = np.shape(img)
+    for y in range(0, img_shape[0], single_size[0]):
+        for x in range(0, img_shape[1], single_size[1]):
+            images.append(np.copy(img[y:y+single_size[0], x:x+single_size[1]]))
+    return images
 
 if __name__ == '__main__':
     
-    faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/faces/', max_num=50)
-    non_faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/nonfaces/', max_num=50)
+#    faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/faces/', max_num=50)
+    faces = load_image_and_split('/home/simon/faces.png', (80, 60))
+    faces2 = load_image_and_split('/home/simon/faces2.png', (80, 60))
+    faces = faces + faces2
+    non_faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/nonfaces/', max_num=50, scale_to=(80, 60))
     inputs = np.array(faces + non_faces)
     targets = np.array([ [1] for _ in range(len(faces))] + [ [0] for _ in range(len(non_faces))])
     data_set = NumericalDataSet(inputs, targets)
 
-    # 24x24 -> C(3): 22x22 -> P(2): 11x11 -> C(3): 9x9 -> P(3): 3x3 -> C(3): 1x1
-    net = ConvNet(iterations=20, learning_rate=0.001, topo=[('c', 3, 4), ('p', 2), ('c', 3, 4), ('p', 3), ('c', 3, 4), ('mlp', 4, 1)])
+    # 80x60 ->    C(9): 72x52 -> P(3): 24x18 -> C(9): 16x10 -> P(2): 8x5 -> C(5): 4x1 -> P(4): 1x1
+    net_topo = [('c', 9, 6),   ('p', 3),      ('c', 9, 16), ('p', 2),    ('c', 5, 40),  ('p', 4), ('mlp', 40, 40, 1)]
+    net = ConvNet(iterations=20, learning_rate=0.01, topo=net_topo)
     net.train(data_set)
     preds = net.predict(data_set)
-    print preds
+    conf_mat = np.zeros((2, 2))
+    for t, p in zip([t[0] for t in targets], [int(np.round(x[0,0])) for x in preds]):
+        conf_mat[t, np.min([p, 1])] += 1
+    print conf_mat
 
     # fig = plt.figure(1)
     # plt.set_cmap('gray')
