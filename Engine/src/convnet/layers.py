@@ -38,7 +38,13 @@ class ConvLayer(object):
         self.num_maps = num_maps
         self.kernel_size = kernel_size
         fan_in = np.sqrt(kernel_size * kernel_size * num_prev_maps)
-        self.weights = np.random.uniform(low=-1/fan_in, high=1/fan_in, size=(num_maps, num_prev_maps, kernel_size, kernel_size))
+        # kernels/filters for each connection from the previous layer's feature
+        # maps to the feature maps of this layer, indexes:
+        # [index of feature map in previous layer,
+        # index of feature map in this layer, row, column]
+        # -> weights[0, 1] is the filter between feature map 0 of the previous
+        # layer and feature map 1 of this layer
+        self.weights = np.random.uniform(low=-1/fan_in, high=1/fan_in, size=(num_prev_maps, num_maps, kernel_size, kernel_size))
         self.biases = np.zeros(num_maps) # np.random.rand(num_maps)-0.5
         self.activation_func = activation_func
         self.deriv_activation_func = deriv_activation_func
@@ -59,21 +65,21 @@ class ConvLayer(object):
             inputs = np.array([inputs])
         self.inputs = np.copy(inputs)
         in_size = np.shape(self.inputs[0])
-        out_size = (in_size[0] - self.kernel_size + 1, in_size[1] - self.kernel_size + 1)
-        self.outputs = np.zeros((self.num_maps, out_size[0], out_size[1]))
+        out_shape = (in_size[0] - self.kernel_size + 1, in_size[1] - self.kernel_size + 1)
+        self.outputs = np.zeros((self.num_maps, out_shape[0], out_shape[1]))
         # go through all feature maps of this layer
         for fm_idx in range(self.num_maps):
             bias = self.biases[fm_idx]
-            conv_out = np.zeros(out_size)
+            conv_out = np.zeros(out_shape)
             # convolve inputs with weights and sum the results
             for prev_fm_idx in range(self.num_prev_maps):
-                kernel = self.weights[fm_idx, prev_fm_idx]
+                kernel = self.weights[prev_fm_idx, fm_idx]
                 prev_out = self.inputs[prev_fm_idx]
                 conv_out += signal.convolve2d(prev_out, kernel, mode='valid')
             # add bias and apply activation function for final output
-            self.outputs[fm_idx, :, :] = self.activation_func(conv_out + bias)
-        if out_size == 1:
-            return np.array([ self.outputs[:, 0, 0] ])
+            self.outputs[fm_idx] = self.activation_func(conv_out + bias)
+        if out_shape == (1, 1):
+            return np.array([self.outputs[:, 0, 0]])
         return self.outputs
 
     def backpropagate(self, error):
@@ -89,30 +95,49 @@ class ConvLayer(object):
         # has the same size as the input for each previous feature map
         backprop_error = np.zeros((self.num_prev_maps, out_size[0] + self.kernel_size - 1, out_size[1] + self.kernel_size - 1))
         self.deltas = np.zeros((self.num_maps, out_size[0], out_size[1]))
+
+        # calculate deltas for this layer
         for fm_idx in range(self.num_maps):
             fm_error = error[fm_idx]
-            self.deltas[fm_idx] = np.array([np.sum(fm_error * self.deriv_activation_func(self.outputs[fm_idx]), axis=1)]).transpose()
-            # calculate error for previous layer: the sum of all
+            # calculate deltas for feature map
+            # supposing that the derivation function takes the function value as
+            # input
+            derived_input = self.deriv_activation_func(self.outputs[fm_idx])
+            self.deltas[fm_idx] = fm_error * derived_input
+
+        # calculate errors for previous layer's feature maps: cross-correlate
+        # each feature map's delta with the connection's kernel, the sum over
+        # all these correlations (actually only those that have a connection to
+        # the previous feature map, here: fully connected) is the delta for the
+        # feature map in the previous layer
+        for fm_idx in range(self.num_maps):
             for prev_fm_idx in range(self.num_prev_maps):
-                # convolve delta with kernel using 'full' mode, to obtain the
+                # correlate delta with kernel using 'full' mode, to obtain the
                 # error for the feature map in the previous layer
-                kernel = self.weights[fm_idx, prev_fm_idx]
-                # Todo: could use correlate2d
-                backprop_error[prev_fm_idx] += nputils.rot180(signal.convolve2d(nputils.rot180(self.deltas[fm_idx]), kernel, mode='full'))
+                kernel = self.weights[prev_fm_idx, fm_idx]
+                # 'full' mode pads the input on all sides with zeros increasing
+                # the overall size of the input by kernel_size-1 in both
+                # dimensions ( (kernel_size-1)/2 on each side)
+                fm_error = signal.correlate2d(self.deltas[fm_idx], kernel, mode='full')
+                backprop_error[prev_fm_idx] += fm_error
 
         return backprop_error
 
     def calc_gradients(self):
-        self.gradients = np.zeros((self.num_maps, self.num_prev_maps, self.kernel_size, self.kernel_size))
+        self.gradients = np.zeros((self.num_prev_maps, self.num_maps, self.kernel_size, self.kernel_size))
         for fm_idx in range(self.num_maps):
             for prev_fm_idx in range(self.num_prev_maps):
-                self.gradients[fm_idx, prev_fm_idx, :, :] = signal.convolve2d(self.inputs[prev_fm_idx], self.deltas[fm_idx], mode='valid')
+                prev_fm_output = self.inputs[prev_fm_idx]
+                fm_delta = self.deltas[fm_idx]
+                fm_gradient = nputils.rot180(signal.correlate2d(prev_fm_output, fm_delta, mode='valid'))
+                self.gradients[prev_fm_idx, fm_idx] = fm_gradient
 
     def update(self, learning_rate):
         for fm_idx in range(self.num_maps):
-            self.biases[fm_idx] -= learning_rate * np.sum(self.gradients[fm_idx, :, :, :])
+            self.biases[fm_idx] -= learning_rate * np.sum(self.deltas[fm_idx]) #* np.power(self.kernel_size, 2) * self.num_prev_maps
             for prev_fm_idx in range(self.num_prev_maps):
-                self.weights[fm_idx, prev_fm_idx] -= learning_rate * self.gradients[fm_idx, prev_fm_idx, :, :]
+                fm_gradient = self.gradients[prev_fm_idx, fm_idx]
+                self.weights[prev_fm_idx, fm_idx] -= learning_rate * fm_gradient
 
 class MaxPoolLayer(object):
     """
@@ -121,14 +146,23 @@ class MaxPoolLayer(object):
     feedforward.
     """
 
-    def __init__(self, size):
+    def __init__(self, size, num_maps, activation_func=np.tanh, deriv_activation_func=nputils.tanhDeriv):
         """
         Creates a new layer that applies max pooling to each non-overlapping
         size * size square of the given inputs.
         :param size: Size of the square that is used for max pooling
         """
         self.size = size
+        self.num_maps = num_maps
         self.in_shape = None
+        self.weights = np.random.random(num_maps) - 0.5
+        self.biases = np.zeros(num_maps)
+        self.activation_func = activation_func
+        self.deriv_activation_func = deriv_activation_func
+        self.output = None
+        self.down_in = None
+        self.deltas = None
+        self.gradients = None
 
     def feedforward(self, inputs):
         """
@@ -142,20 +176,43 @@ class MaxPoolLayer(object):
         """
         self.in_shape = np.shape(inputs)
         fm_out_shape = (np.ceil(self.in_shape[1] / float(self.size)), np.ceil(self.in_shape[2] / float(self.size)))
-        result = np.zeros((self.in_shape[0], fm_out_shape[0], fm_out_shape[1]))
+        self.down_in = np.zeros((self.num_maps, fm_out_shape[0], fm_out_shape[1]))
+        self.output = np.zeros((self.in_shape[0], fm_out_shape[0], fm_out_shape[1]))
         for fm_idx in range(np.shape(inputs)[0]):
-            result[fm_idx, :, :] = max_pool(inputs[fm_idx], self.size)
+            weight = self.weights[fm_idx]
+            bias = self.biases[fm_idx]
+            self.down_in[fm_idx] = max_pool(inputs[fm_idx], self.size)
+            self.output[fm_idx] = self.activation_func(weight * self.down_in[fm_idx] + bias)
+        out = self.output
         # when there is only a single pixel as output, return a vector
         if fm_out_shape == (1, 1):
-            result = np.array([ result[:, 0, 0] ])
-        return result
+            out = np.array([out[:, 0, 0]])
+        return out
 
     def backpropagate(self, error):
+        self.deltas = np.zeros(self.output.shape)
         error_shape = np.shape(error)
         backprop_error = np.zeros((error_shape[0], self.in_shape[1], self.in_shape[2]))
-        for fm_idx in range(error_shape[0]):
-            backprop_error[fm_idx, :, :] = trans.resize(error[fm_idx], (self.in_shape[1], self.in_shape[2]))
+        for fm_idx in range(self.num_maps):
+            fm_error = error[fm_idx]
+            fm_weight = self.weights[fm_idx]
+            deriv_input = self.deriv_activation_func(self.output[fm_idx])
+            self.deltas[fm_idx] = deriv_input * fm_error
+            backprop_error[fm_idx] = trans.resize(fm_weight * self.deltas[fm_idx], (self.in_shape[1], self.in_shape[2]))
         return backprop_error
+
+    def calc_gradients(self):
+        self.gradients = np.zeros(self.weights.shape)
+        for fm_idx in range(self.num_maps):
+            fm_delta = self.deltas[fm_idx]
+            fm_gradient = np.sum(self.down_in[fm_idx] * fm_delta)
+            self.gradients[fm_idx] = fm_gradient
+
+    def update(self, learning_rate):
+        for fm_idx in range(self.num_maps):
+            self.biases[fm_idx] -= learning_rate * np.sum(self.deltas[fm_idx]) #* np.power(self.kernel_size, 2) * self.num_prev_maps
+            fm_gradient = self.gradients[fm_idx]
+            self.weights[fm_idx] -= learning_rate * fm_gradient
 
 
 def max_pool(img, size):

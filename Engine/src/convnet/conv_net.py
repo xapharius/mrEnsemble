@@ -5,10 +5,7 @@ Created on Jul 22, 2014
 """
 import numpy as np
 import scipy.ndimage as nd
-import os
-import skimage.io as io
-from skimage import img_as_float
-from skimage.transform import resize
+import utils.imageutils as imgutils
 import matplotlib.pyplot as plt
 from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN, \
     SimpleUpdate
@@ -195,7 +192,6 @@ class ConvNet(object):
         self.iterations = iterations
         self.learning_rate = learning_rate
         self.layers = []
-        self.conv_layers = []
         num_prev_maps = 1
         # parse topology
         for layer in topo:
@@ -203,11 +199,10 @@ class ConvNet(object):
             if layer[0] == 'c':
                 conv_layer = ConvLayer(num_prev_maps=num_prev_maps, kernel_size=layer[1], num_maps=layer[2])
                 self.add_layer(conv_layer)
-                self.conv_layers.append(conv_layer)
                 num_prev_maps = layer[2]
             # pooling layer
             elif layer[0] == 'p':
-                self.add_layer(MaxPoolLayer(size=layer[1]))
+                self.add_layer(MaxPoolLayer(layer[1], num_prev_maps))
             # multilayer perceptron
             elif layer[0] == 'mlp':
                 self.mlp = PredictionNN(list(layer[1:]), update_method=SimpleUpdate(self.learning_rate), activation_function=np.tanh, deriv_activation_function=nputils.tanhDeriv)
@@ -246,7 +241,9 @@ class ConvNet(object):
             # make sure it is a numpy array
             input_arr = np.array(observation)
             outputs = self.feedforward(input_arr)
-            predictions.append(outputs[-1])
+            pred = np.zeros(outputs[-1].shape)
+            pred[0, np.argmax(outputs[-1])] = 1.
+            predictions.append(pred)
         return predictions
 
     def train(self, data_set):
@@ -267,57 +264,37 @@ class ConvNet(object):
                 mlp_deltas = self.mlp.backpropagation(mlp_outputs, target_arr)
                 mlp_weight_updates = self.mlp.calculate_weight_updates(mlp_deltas, mlp_outputs)
                 self.mlp.update_method.perform_update(self.mlp.weightsArr, mlp_weight_updates, current_error)
-                # convolutional layer backpropagation and gradient descent
+                # layer backpropagation and gradient descent
                 # calculate backpropagated error of first mlp layer
                 backprop_error = np.array([ [x] for x in np.dot(self.mlp.weightsArr[0], mlp_deltas[0].transpose()) ])
                 for layer in reversed(self.layers):
                     backprop_error = layer.backpropagate(backprop_error)
-                for conv_layer in self.conv_layers:
-                    conv_layer.calc_gradients()
-                    conv_layer.update(self.learning_rate)
+                for layer in self.layers:
+                    layer.calc_gradients()
+                    layer.update(self.learning_rate)
 
-            logging.info("  Avg. error: " + str(it_error / data_set.get_nr_observations()) + "\n")
+            avg_error = it_error / data_set.get_nr_observations( )
+            logging.info("  Avg. error: " + str( avg_error ) + "\n")
 
-
-def load_images(path, max_num=-1, scale_to=None):
-    images = []
-    for _file in os.listdir(path):
-        if _file.endswith('.png'):
-            img = img_as_float(io.imread(path + '/' + _file, as_grey=True))
-            if scale_to is not None:
-                img = resize(img, scale_to)
-            images.append(img)
-            if len(images) == max_num:
-                break
-    return images
-
-def load_image_and_split(path, single_size):
-    images = []
-    img = img_as_float(io.imread(path, as_grey=True))
-    img_shape = np.shape(img)
-    for y in range(0, img_shape[0], single_size[0]):
-        for x in range(0, img_shape[1], single_size[1]):
-            images.append(np.copy(img[y:y+single_size[0], x:x+single_size[1]]))
-    return images
 
 if __name__ == '__main__':
     
-#    faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/faces/', max_num=50)
-    faces = load_image_and_split('/home/simon/faces.png', (80, 60))
-    faces2 = load_image_and_split('/home/simon/faces2.png', (80, 60))
-    faces = faces + faces2
-    non_faces = load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/nonfaces/', max_num=50, scale_to=(80, 60))
+    faces = imgutils.load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/faces/', max_num=80)
+#     faces = load_image_and_split('/home/simon/faces.png', (80, 60))
+#     faces2 = load_image_and_split('/home/simon/faces2.png', (80, 60))
+#     faces = faces + faces2
+    non_faces = imgutils.load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/nonfaces/', max_num=100) #, scale_to=(80, 60))
     inputs = np.array(faces + non_faces)
     targets = np.array([ [1] for _ in range(len(faces))] + [ [0] for _ in range(len(non_faces))])
     data_set = NumericalDataSet(inputs, targets)
 
-    # 80x60 ->    C(9): 72x52 -> P(3): 24x18 -> C(9): 16x10 -> P(2): 8x5 -> C(5): 4x1 -> P(4): 1x1
-    net_topo = [('c', 9, 6),   ('p', 3),      ('c', 9, 16), ('p', 2),    ('c', 5, 40),  ('p', 4), ('mlp', 40, 40, 1)]
-    net = ConvNet(iterations=20, learning_rate=0.01, topo=net_topo)
+    # 24x24 -> C(5): 20x20 -> P(2): 10x10 -> C(3): 8x8 -> P(2): 4x4 -> C(3): 2x2 -> p(2): 1x1
+    net_topo = [('c', 5, 8), ('p', 2), ('c', 3, 16), ('p', 2), ('c', 3, 24), ('p', 2), ('mlp', 24, 24, 1)]
+    net = ConvNet(iterations=20, learning_rate=0.0001, topo=net_topo)
     net.train(data_set)
     preds = net.predict(data_set)
     conf_mat = np.zeros((2, 2))
-    for t, p in zip([t[0] for t in targets], [int(np.round(x[0,0])) for x in preds]):
+    for t, p in zip([t[0] for t in targets], [int(np.round(x[0, 0])) for x in preds]):
         conf_mat[t, np.min([p, 1])] += 1
     print conf_mat
 

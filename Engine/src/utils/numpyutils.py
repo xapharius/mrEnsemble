@@ -7,6 +7,7 @@ import numpy as np
 import math
 import sys
 
+
 def addOneToVec(npArr):
     '''
     add a one to row or column vec(array)
@@ -120,6 +121,13 @@ def rot180(arr):
     return np.rot90(np.rot90(arr))
 
 
-
 def calc_squared_error(expected, actual):
     return np.sum( 0.5 * np.power(expected - actual, 2))
+
+
+def normalize_image(img, new_min, new_max):
+    img_min = img.min()
+    img_max = img.max()
+    if img_min == img_max:
+        return np.zeros(img.shape)
+    return (img - img_min) * ((new_max - new_min) / (img_max - img_min)) + new_min
