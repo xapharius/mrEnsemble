@@ -131,3 +131,14 @@ def normalize_image(img, new_min, new_max):
     if img_min == img_max:
         return np.zeros(img.shape)
     return (img - img_min) * ((new_max - new_min) / (img_max - img_min)) + new_min
+
+
+def vec_with_one(length, idx):
+    vec = np.zeros(length)
+    vec[idx] = 1
+    return vec
+
+
+def softmax(arr, t = 1.0):
+    e = np.exp(arr / t)
+    return e / np.sum(e)

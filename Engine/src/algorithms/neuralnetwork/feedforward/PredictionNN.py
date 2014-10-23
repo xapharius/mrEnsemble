@@ -319,11 +319,7 @@ class PredictionNN( AbstractAlgorithm ):
             if i != len( self.weightsArr ) - 1:
                 layer_out = self.activation_function( layer_activation )
             else:
-                # max_idx = np.argmax(layer_activation)
-                # layer_out = np.zeros(layer_activation.shape)
-                # layer_out[0, max_idx] = 1.
-                layer_out = layer_activation
-
+                layer_out = nputils.softmax(layer_activation)
             outputs.append( layer_out )
 
         return outputs

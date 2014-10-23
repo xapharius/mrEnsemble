@@ -118,7 +118,7 @@ class ConvLayer(object):
                 # 'full' mode pads the input on all sides with zeros increasing
                 # the overall size of the input by kernel_size-1 in both
                 # dimensions ( (kernel_size-1)/2 on each side)
-                fm_error = signal.correlate2d(self.deltas[fm_idx], kernel, mode='full')
+                fm_error = nputils.rot180(signal.correlate2d(kernel, self.deltas[fm_idx], mode='full', boundary='wrap'))
                 backprop_error[prev_fm_idx] += fm_error
 
         return backprop_error
@@ -134,8 +134,8 @@ class ConvLayer(object):
 
     def update(self, learning_rate):
         for fm_idx in range(self.num_maps):
-            self.biases[fm_idx] -= learning_rate * np.sum(self.deltas[fm_idx]) #* np.power(self.kernel_size, 2) * self.num_prev_maps
-            for prev_fm_idx in range(self.num_prev_maps):
+            self.biases[fm_idx] -= learning_rate * np.sum(self.deltas[fm_idx]) * np.power(self.kernel_size, 2) * self.num_prev_maps
+            for prev_fm_idx in range(0, self.num_prev_maps, fm_idx+1):
                 fm_gradient = self.gradients[prev_fm_idx, fm_idx]
                 self.weights[prev_fm_idx, fm_idx] -= learning_rate * fm_gradient
 
@@ -181,8 +181,9 @@ class MaxPoolLayer(object):
         for fm_idx in range(np.shape(inputs)[0]):
             weight = self.weights[fm_idx]
             bias = self.biases[fm_idx]
-            self.down_in[fm_idx] = max_pool(inputs[fm_idx], self.size)
-            self.output[fm_idx] = self.activation_func(weight * self.down_in[fm_idx] + bias)
+            self.down_in[fm_idx] = avg_pool(inputs[fm_idx], self.size)
+            # self.output[fm_idx] = self.activation_func(weight * self.down_in[fm_idx] + bias)
+            self.output[fm_idx] = self.down_in[fm_idx]
         out = self.output
         # when there is only a single pixel as output, return a vector
         if fm_out_shape == (1, 1):
@@ -198,7 +199,7 @@ class MaxPoolLayer(object):
             fm_weight = self.weights[fm_idx]
             deriv_input = self.deriv_activation_func(self.output[fm_idx])
             self.deltas[fm_idx] = deriv_input * fm_error
-            backprop_error[fm_idx] = trans.resize(fm_weight * self.deltas[fm_idx], (self.in_shape[1], self.in_shape[2]))
+            backprop_error[fm_idx] = trans.resize(fm_error, (self.in_shape[1], self.in_shape[2]))#trans.resize(fm_weight * self.deltas[fm_idx], (self.in_shape[1], self.in_shape[2]))
         return backprop_error
 
     def calc_gradients(self):
@@ -209,6 +210,7 @@ class MaxPoolLayer(object):
             self.gradients[fm_idx] = fm_gradient
 
     def update(self, learning_rate):
+        return
         for fm_idx in range(self.num_maps):
             self.biases[fm_idx] -= learning_rate * np.sum(self.deltas[fm_idx]) #* np.power(self.kernel_size, 2) * self.num_prev_maps
             fm_gradient = self.gradients[fm_idx]
@@ -239,6 +241,21 @@ def max_pool(img, size):
             result[row/size, col/size] = np.max(img[row:row + size, col:col + size])
     return result
 
+def avg_pool(img, size):
+    img_shape = np.shape(img)
+    # pad vertically with -1
+    # if img_shape[0] % size != 0:
+    #     img = np.vstack((img, np.ones((size - img_shape[0] % size, img_shape[1])) * -1))
+    #     img_shape = np.shape(img)
+    # # pad horizontally with -1
+    # if img_shape[1] % size != 0:
+    #     img = np.hstack((img, np.ones((img_shape[0], size - img_shape[1] % size)) * -1))
+    #     img_shape = np.shape(img)
+    result = np.zeros((img_shape[0] / size, img_shape[1] / size))
+    for row in range(0, img_shape[0]-size+1, size):
+        for col in range(0, img_shape[1]-size+1, size):
+            result[row/size, col/size] = np.average(img[row:row + size, col:col + size])
+    return result
 
 def tile(img, size):
     """
