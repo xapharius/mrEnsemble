@@ -1,5 +1,6 @@
 *.py[cod]
 *.pydevproject
+*.idea
 
 # C extensions
 *.so
