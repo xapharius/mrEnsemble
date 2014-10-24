@@ -316,10 +316,7 @@ class PredictionNN( AbstractAlgorithm ):
             # activation is weighted sum for each neuron
             layer_activation = np.dot( layer_in, self.weightsArr[ i ] )
             # activation function is a logistic unit, except last layer
-            if i != len( self.weightsArr ) - 1:
-                layer_out = self.activation_function( layer_activation )
-            else:
-                layer_out = nputils.softmax(layer_activation)
+            layer_out = self.activation_function( layer_activation )
             outputs.append( layer_out )
 
         return outputs

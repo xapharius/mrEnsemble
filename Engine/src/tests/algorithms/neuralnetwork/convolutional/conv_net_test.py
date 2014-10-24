@@ -41,9 +41,9 @@ class Test(unittest.TestCase):
         test_targets = np.array([[1, 0] for _ in test_verticals] + [[0, 1] for _ in test_horizontals])
         test_data_set = NumericalDataSet(test_inputs, test_targets)
 
-        # 16x16 -> C(3): 14x14 -> P(2): 7x7 -> C(3): 5x5 -> P(2): 3x3 -> C(3): 1x1
-        net_topo = [('c', 3, 6), ('p', 2), ('c', 3, 8), ('p', 2), ('c', 3, 16), ('mlp', 16, 32, 2)]
-        net = ConvNet(iterations=20, learning_rate=0.001, topo=net_topo)
+        # 16x16 -> C(3): 14x14 -> P(2): 7x7 -> C(3): 5x5 -> P(5): 1x1
+        net_topo = [('c', 3, 6), ('p', 2), ('c', 3, 8), ('p', 5), ('mlp', 8, 8, 2)]
+        net = ConvNet(iterations=50, learning_rate=0.001, topo=net_topo)
         net.train(data_set)
 
         preds = net.predict(test_data_set)
@@ -55,26 +55,27 @@ class Test(unittest.TestCase):
 
 
     def test_mnist_digits(self):
-        digits, labels = imgutils.load_mnist_digits('/home/simon/virtualbox-shared/HadoopML/data/mnist-digits/train-images.idx3-ubyte', '/home/simon/virtualbox-shared/HadoopML/data/mnist-digits/train-labels.idx1-ubyte', 100)
+        digits, labels = imgutils.load_mnist_digits('/home/simon/HadoopML/data/mnist-digits/train-images.idx3-ubyte', '/home/simon/HadoopML/data/mnist-digits/train-labels.idx1-ubyte', 100)
         targets = np.array([ nputils.vec_with_one(10, digit) for digit in labels ])
-        data_set = NumericalDataSet(np.array(digits), targets)
+        train_data_set = NumericalDataSet(np.array(digits)[:80], targets[:80])
+        test_data_set = NumericalDataSet(np.array(digits)[80:], targets[80:])
 
         # 28x28 -> C(5): 24x24 -> P(2): 12x12 -> C(5): 8x8 -> P(2): 4x4 -> C(4): 1x1
         net_topo = [('c', 5, 8), ('p', 2), ('c', 5, 16), ('p', 2), ('c', 4, 16), ('mlp', 16, 16, 10)]
-        net = ConvNet(iterations=10, learning_rate=0.01, topo=net_topo)
-        net.train(data_set)
+        net = ConvNet(iterations=40, learning_rate=0.001, topo=net_topo)
+        net.train(train_data_set)
 
-        preds = net.predict(data_set)
+        preds = net.predict(test_data_set)
         conf_mat = np.zeros((10, 10))
-        for t, p in zip([np.argmax(t) for t in targets], [np.argmax(x) for x in preds]):
-            conf_mat[t, np.min([p, 1])] += 1
+        for t, p in zip([np.argmax(t) for t in targets[80:]], [np.argmax(x) for x in preds]):
+            conf_mat[t, p] += 1
         print conf_mat
         print "Error rate: " + str(100 - (np.sum(conf_mat.diagonal()) / np.sum(conf_mat[:, :]) * 100)) + "%"
 
 
     def test_face_recognition(self):
-        faces = imgutils.load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/faces/', max_num=50)
-        non_faces = imgutils.load_images('/home/simon/Uni/Mustererkennung/uebung10/trainingdata/nonfaces/', max_num=50)
+        faces = imgutils.load_images('/home/simon/trainingdata/faces/', max_num=50)
+        non_faces = imgutils.load_images('/home/simon/trainingdata/nonfaces/', max_num=50)
         faces_training = faces[0:40]
         faces_testing = faces[40:]
         non_faces_training = non_faces[0:40]
@@ -90,7 +91,7 @@ class Test(unittest.TestCase):
 
         # 24x24 -> C(5): 20x20 -> P(2): 10x10 -> C(3): 8x8 -> P(2): 4x4 -> C(3): 2x2 -> p(2): 1x1
         net_topo = [('c', 5, 8), ('p', 2), ('c', 3, 16), ('p', 2), ('c', 3, 24), ('p', 2), ('mlp', 24, 24, 2)]
-        net = ConvNet(iterations=10, learning_rate=0.0001, topo=net_topo)
+        net = ConvNet(iterations=30, learning_rate=0.001, topo=net_topo)
         net.train(data_set_training)
         preds = net.predict(data_set_testing)
         conf_mat = np.zeros((2, 2))
@@ -120,6 +121,7 @@ class Test(unittest.TestCase):
         # plt.imshow(np.array([[mlp_out[2][0, 1]]]), vmin=0, vmax=1)
         #
         # plt.show()
+
 
 
 

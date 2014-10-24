@@ -110,8 +110,8 @@ class ConvLayer(object):
         # all these correlations (actually only those that have a connection to
         # the previous feature map, here: fully connected) is the delta for the
         # feature map in the previous layer
-        for fm_idx in range(self.num_maps):
-            for prev_fm_idx in range(self.num_prev_maps):
+        for prev_fm_idx in range(self.num_prev_maps):
+            for fm_idx in range(self.num_maps):
                 # correlate delta with kernel using 'full' mode, to obtain the
                 # error for the feature map in the previous layer
                 kernel = self.weights[prev_fm_idx, fm_idx]
@@ -134,8 +134,8 @@ class ConvLayer(object):
 
     def update(self, learning_rate):
         for fm_idx in range(self.num_maps):
-            self.biases[fm_idx] -= learning_rate * np.sum(self.deltas[fm_idx]) * np.power(self.kernel_size, 2) * self.num_prev_maps
-            for prev_fm_idx in range(0, self.num_prev_maps, fm_idx+1):
+            self.biases[fm_idx] -= learning_rate * np.sum(self.deltas[fm_idx])# * np.power(self.kernel_size, 2) * self.num_prev_maps
+            for prev_fm_idx in range(self.num_prev_maps):
                 fm_gradient = self.gradients[prev_fm_idx, fm_idx]
                 self.weights[prev_fm_idx, fm_idx] -= learning_rate * fm_gradient
 
@@ -181,7 +181,7 @@ class MaxPoolLayer(object):
         for fm_idx in range(np.shape(inputs)[0]):
             weight = self.weights[fm_idx]
             bias = self.biases[fm_idx]
-            self.down_in[fm_idx] = avg_pool(inputs[fm_idx], self.size)
+            self.down_in[fm_idx] = max_pool(inputs[fm_idx], self.size)
             # self.output[fm_idx] = self.activation_func(weight * self.down_in[fm_idx] + bias)
             self.output[fm_idx] = self.down_in[fm_idx]
         out = self.output
@@ -196,10 +196,10 @@ class MaxPoolLayer(object):
         backprop_error = np.zeros((error_shape[0], self.in_shape[1], self.in_shape[2]))
         for fm_idx in range(self.num_maps):
             fm_error = error[fm_idx]
-            fm_weight = self.weights[fm_idx]
-            deriv_input = self.deriv_activation_func(self.output[fm_idx])
-            self.deltas[fm_idx] = deriv_input * fm_error
-            backprop_error[fm_idx] = trans.resize(fm_error, (self.in_shape[1], self.in_shape[2]))#trans.resize(fm_weight * self.deltas[fm_idx], (self.in_shape[1], self.in_shape[2]))
+            # fm_weight = self.weights[fm_idx]
+            # deriv_input = self.deriv_activation_func(self.output[fm_idx])
+            # self.deltas[fm_idx] = deriv_input * fm_error
+            backprop_error[fm_idx] = tile(fm_error, self.size)#trans.resize(fm_weight * self.deltas[fm_idx], (self.in_shape[1], self.in_shape[2]))
         return backprop_error
 
     def calc_gradients(self):
