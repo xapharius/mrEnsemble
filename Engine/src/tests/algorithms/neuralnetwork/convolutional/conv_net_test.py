@@ -5,6 +5,7 @@ import utils.numpyutils as nputils
 import numpy as np
 from convnet.conv_net import ConvNet
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
+import utils.serialization as srlztn
 
 def gen_vertical_bars(num):
     bars = []
@@ -55,22 +56,28 @@ class Test(unittest.TestCase):
 
 
     def test_mnist_digits(self):
-        digits, labels = imgutils.load_mnist_digits('/home/simon/HadoopML/data/mnist-digits/train-images.idx3-ubyte', '/home/simon/HadoopML/data/mnist-digits/train-labels.idx1-ubyte', 100)
+        digits, labels = imgutils.load_mnist_digits('../../data/mnist-digits/train-images.idx3-ubyte', '../../data/mnist-digits/train-labels.idx1-ubyte', 200)
         targets = np.array([ nputils.vec_with_one(10, digit) for digit in labels ])
-        train_data_set = NumericalDataSet(np.array(digits)[:80], targets[:80])
-        test_data_set = NumericalDataSet(np.array(digits)[80:], targets[80:])
+        train_data_set = NumericalDataSet(np.array(digits)[:150], targets[:150])
+        test_data_set = NumericalDataSet(np.array(digits)[150:], targets[150:])
 
         # 28x28 -> C(5): 24x24 -> P(2): 12x12 -> C(5): 8x8 -> P(2): 4x4 -> C(4): 1x1
         net_topo = [('c', 5, 8), ('p', 2), ('c', 5, 16), ('p', 2), ('c', 4, 16), ('mlp', 16, 16, 10)]
-        net = ConvNet(iterations=40, learning_rate=0.001, topo=net_topo)
+        net = ConvNet(iterations=30, learning_rate=0.01, topo=net_topo)
         net.train(train_data_set)
+        try:
+            srlztn.save_object('mnist_digits.cnn', net)
+        except:
+            print("serialization error")
 
         preds = net.predict(test_data_set)
         conf_mat = np.zeros((10, 10))
-        for t, p in zip([np.argmax(t) for t in targets[80:]], [np.argmax(x) for x in preds]):
+        for t, p in zip([np.argmax(t) for t in targets[150:]], [np.argmax(x) for x in preds]):
             conf_mat[t, p] += 1
         print conf_mat
-        print "Error rate: " + str(100 - (np.sum(conf_mat.diagonal()) / np.sum(conf_mat[:, :]) * 100)) + "%"
+        num_correct = np.sum(conf_mat.diagonal())
+        num_all = np.sum(conf_mat[:, :])
+        print "Error rate: " + str(100 - (num_correct / num_all * 100)) + "% (" + str(num_correct) + "/" + str(num_all) + ")"
 
 
     def test_face_recognition(self):

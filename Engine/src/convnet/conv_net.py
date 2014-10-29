@@ -89,10 +89,14 @@ class ConvNet(object):
             # make sure it is a numpy array
             input_arr = np.array(observation)
             outputs = self.feedforward(input_arr)
-            pred = np.zeros(outputs[-1].shape)
-            pred[0, np.argmax(outputs[-1])] = 1.
-            predictions.append(pred)
+            # pred = np.zeros(outputs[-1].shape)
+            # pred[0, np.argmax(outputs[-1])] = 1.
+            predictions.append(nputils.softmax(outputs[-1]))
         return predictions
+
+    def predict_single(self, input_arr):
+        outputs = self.feedforward(input_arr)
+        return nputils.softmax(outputs[-1])
 
     def train(self, data_set):
         for it in range(self.iterations):
