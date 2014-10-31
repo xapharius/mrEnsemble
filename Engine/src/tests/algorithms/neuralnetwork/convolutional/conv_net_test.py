@@ -6,6 +6,7 @@ import numpy as np
 from convnet.conv_net import ConvNet
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
 import utils.serialization as srlztn
+import scipy.signal as signal
 
 def gen_vertical_bars(num):
     bars = []
@@ -58,7 +59,7 @@ class Test(unittest.TestCase):
     def test_mnist_digits(self):
         digits, labels = imgutils.load_mnist_digits('../../data/mnist-digits/train-images.idx3-ubyte', '../../data/mnist-digits/train-labels.idx1-ubyte', 200)
         targets = np.array([ nputils.vec_with_one(10, digit) for digit in labels ])
-        train_data_set = NumericalDataSet(np.array(digits)[:150], targets[:150])
+        train_data_set = NumericalDataSet(np.array(digits)[:50], targets[:50])
         test_data_set = NumericalDataSet(np.array(digits)[150:], targets[150:])
 
         # 28x28 -> C(5): 24x24 -> P(2): 12x12 -> C(5): 8x8 -> P(2): 4x4 -> C(4): 1x1
@@ -66,7 +67,7 @@ class Test(unittest.TestCase):
         net = ConvNet(iterations=30, learning_rate=0.01, topo=net_topo)
         net.train(train_data_set)
         try:
-            srlztn.save_object('mnist_digits.cnn', net)
+            srlztn.save_object('../../trained/mnist_digits.cnn', net)
         except:
             print("serialization error")
 
@@ -109,7 +110,7 @@ class Test(unittest.TestCase):
 
         # fig = plt.figure(1)
         # plt.set_cmap('gray')
-        # num_rows = 6
+        # num_rows = 6x-img.shape[0]
         # num_cols = 4
         # fig.add_subplot(num_rows, num_cols, 1)
         # plt.imshow(faces[0])
@@ -130,6 +131,11 @@ class Test(unittest.TestCase):
         # plt.show()
 
 
+    def test_pseudo_conv(self):
+        img = np.array([[1,2,3,4],[10,0,0,1],[1,3,2,1], [0,1,1,1]])
+        kernel = np.array([[0.1, 0.25, 1],[0.25, 0.25, 0]])
+        print imgutils.pseudo_convolve2d(img, kernel)
+        print nputils.rot180(signal.correlate2d(img, kernel, mode="full", boundary="wrap")[:kernel.shape[0], :kernel.shape[1]])
 
 
 if __name__ == "__main__":

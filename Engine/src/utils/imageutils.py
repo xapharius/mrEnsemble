@@ -66,4 +66,19 @@ def load_mnist_digits(digits_file_name, labels_file_name, max_num=-1):
 
     return images, labels
 
+def pseudo_convolve2d(img, kernel):
+    result = np.zeros(img.shape)
+    padded_img = np.hstack((img, img))
+    padded_img = np.vstack((padded_img, padded_img))
+    for x in range(img.shape[0]):
+        for y in range(img.shape[1]):
+            start_x = img.shape[0]-x
+            end_x = start_x + kernel.shape[0]
+            # if start_x > end_x:
+            #     start_x, end_x = end_x, start_x
+            start_y = img.shape[1]-y
+            end_y = start_y + kernel.shape[1]
+            patch = padded_img[start_x:end_x, start_y:end_y]
+            result[x-img.shape[0], y-img.shape[1]] = np.sum(patch*kernel)
+    return result
 

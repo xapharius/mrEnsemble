@@ -129,7 +129,8 @@ class ConvLayer(object):
             for prev_fm_idx in range(self.num_prev_maps):
                 prev_fm_output = self.inputs[prev_fm_idx]
                 fm_delta = self.deltas[fm_idx]
-                fm_gradient = nputils.rot180(signal.correlate2d(prev_fm_output, fm_delta, mode='valid'))
+                kernel = self.weights[prev_fm_idx, fm_idx]
+                fm_gradient = nputils.rot180(signal.correlate2d(prev_fm_output, fm_delta, mode='full', boundary='wrap')[:kernel.shape[0], :kernel.shape[1]])
                 self.gradients[prev_fm_idx, fm_idx] = fm_gradient
 
     def update(self, learning_rate):
