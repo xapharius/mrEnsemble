@@ -68,8 +68,8 @@ def load_mnist_digits(digits_file_name, labels_file_name, max_num=-1):
 
 def pseudo_convolve2d(img, kernel):
     result = np.zeros(img.shape)
-    padded_img = np.hstack((img, img))
-    padded_img = np.vstack((padded_img, padded_img))
+    padded_img = np.hstack((img, img, img))
+    padded_img = np.vstack((padded_img, padded_img, padded_img))
     for x in range(img.shape[0]):
         for y in range(img.shape[1]):
             start_x = img.shape[0]-x

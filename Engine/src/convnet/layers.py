@@ -118,7 +118,7 @@ class ConvLayer(object):
                 # 'full' mode pads the input on all sides with zeros increasing
                 # the overall size of the input by kernel_size-1 in both
                 # dimensions ( (kernel_size-1)/2 on each side)
-                fm_error = nputils.rot180(signal.correlate2d(kernel, self.deltas[fm_idx], mode='full', boundary='wrap'))
+                fm_error = signal.correlate2d(self.deltas[fm_idx], kernel, mode='full')
                 backprop_error[prev_fm_idx] += fm_error
 
         return backprop_error
@@ -130,7 +130,7 @@ class ConvLayer(object):
                 prev_fm_output = self.inputs[prev_fm_idx]
                 fm_delta = self.deltas[fm_idx]
                 kernel = self.weights[prev_fm_idx, fm_idx]
-                fm_gradient = nputils.rot180(signal.correlate2d(prev_fm_output, fm_delta, mode='full', boundary='wrap')[:kernel.shape[0], :kernel.shape[1]])
+                fm_gradient = nputils.rot180(signal.correlate2d(prev_fm_output, fm_delta, mode='valid'))
                 self.gradients[prev_fm_idx, fm_idx] = fm_gradient
 
     def update(self, learning_rate):

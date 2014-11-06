@@ -57,9 +57,9 @@ class Test(unittest.TestCase):
 
 
     def test_mnist_digits(self):
-        digits, labels = imgutils.load_mnist_digits('../../data/mnist-digits/train-images.idx3-ubyte', '../../data/mnist-digits/train-labels.idx1-ubyte', 200)
+        digits, labels = imgutils.load_mnist_digits('../../data/mnist-digits/train-images.idx3-ubyte', '../../data/mnist-digits/train-labels.idx1-ubyte', 300)
         targets = np.array([ nputils.vec_with_one(10, digit) for digit in labels ])
-        train_data_set = NumericalDataSet(np.array(digits)[:50], targets[:50])
+        train_data_set = NumericalDataSet(np.array(digits)[:150], targets[:150])
         test_data_set = NumericalDataSet(np.array(digits)[150:], targets[150:])
 
         # 28x28 -> C(5): 24x24 -> P(2): 12x12 -> C(5): 8x8 -> P(2): 4x4 -> C(4): 1x1
@@ -78,16 +78,16 @@ class Test(unittest.TestCase):
         print conf_mat
         num_correct = np.sum(conf_mat.diagonal())
         num_all = np.sum(conf_mat[:, :])
-        print "Error rate: " + str(100 - (num_correct / num_all * 100)) + "% (" + str(num_correct) + "/" + str(num_all) + ")"
+        print "Error rate: " + str(100 - (num_correct / num_all * 100)) + "% (" + str(int(num_correct)) + "/" + str(int(num_all)) + ")"
 
 
     def test_face_recognition(self):
-        faces = imgutils.load_images('/home/simon/trainingdata/faces/', max_num=50)
-        non_faces = imgutils.load_images('/home/simon/trainingdata/nonfaces/', max_num=50)
-        faces_training = faces[0:40]
-        faces_testing = faces[40:]
-        non_faces_training = non_faces[0:40]
-        non_faces_testing = non_faces[40:]
+        faces = imgutils.load_images('/home/simon/trainingdata/faces/', max_num=100)
+        non_faces = imgutils.load_images('/home/simon/trainingdata/nonfaces/', max_num=100)
+        faces_training = faces[0:50]
+        faces_testing = faces[50:]
+        non_faces_training = non_faces[0:50]
+        non_faces_testing = non_faces[50:]
 
         inputs_training = np.array(faces_training + non_faces_training)
         targets_training = np.array([ [1, 0] for _ in range(len(faces_training))] + [ [0, 1] for _ in range(len(non_faces_training))])
@@ -99,14 +99,16 @@ class Test(unittest.TestCase):
 
         # 24x24 -> C(5): 20x20 -> P(2): 10x10 -> C(3): 8x8 -> P(2): 4x4 -> C(3): 2x2 -> p(2): 1x1
         net_topo = [('c', 5, 8), ('p', 2), ('c', 3, 16), ('p', 2), ('c', 3, 24), ('p', 2), ('mlp', 24, 24, 2)]
-        net = ConvNet(iterations=30, learning_rate=0.001, topo=net_topo)
+        net = ConvNet(iterations=30, learning_rate=0.01, topo=net_topo)
         net.train(data_set_training)
         preds = net.predict(data_set_testing)
         conf_mat = np.zeros((2, 2))
         for t, p in zip([np.argmax(y) for y in targets_testing], [np.argmax(x) for x in preds]):
             conf_mat[t, p] += 1
         print conf_mat
-        print "Error rate: " + str(100 - (np.sum(conf_mat.diagonal()) / np.sum(conf_mat[:, :]) * 100)) + "%"
+        num_correct = np.sum(conf_mat.diagonal())
+        num_all = np.sum(conf_mat[:, :])
+        print "Error rate: " + str(100 - (num_correct / num_all * 100)) + "% (" + str(int(num_correct)) + "/" + str(int(num_all)) + ")"
 
         # fig = plt.figure(1)
         # plt.set_cmap('gray')
@@ -131,9 +133,9 @@ class Test(unittest.TestCase):
         # plt.show()
 
 
-    def test_pseudo_conv(self):
-        img = np.array([[1,2,3,4],[10,0,0,1],[1,3,2,1], [0,1,1,1]])
-        kernel = np.array([[0.1, 0.25, 1],[0.25, 0.25, 0]])
+    def test_pseudo_corr(self):
+        img = np.random.random((4,4))
+        kernel = np.random.random((5,5))
         print imgutils.pseudo_convolve2d(img, kernel)
         print nputils.rot180(signal.correlate2d(img, kernel, mode="full", boundary="wrap")[:kernel.shape[0], :kernel.shape[1]])
 
