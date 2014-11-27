@@ -14,7 +14,7 @@ def load_image(img_file, normalize=False, scale_to=None):
     if scale_to is not None:
         img = resize(img, scale_to)
     if normalize:
-        img = nputils.normalize_image(img, -1, 1)
+        img = nputils.normalize_arr(img, -1, 1)
     return img
 
 

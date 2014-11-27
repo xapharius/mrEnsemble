@@ -5,7 +5,7 @@ Created on Feb 24, 2014
 '''
 import unittest
 from algorithms.neuralnetwork.feedforward.PredictionNNFactory import PredictionNNFactory
-from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN
+from algorithms.neuralnetwork.feedforward.multilayer_perceptron import MultilayerPerceptron
 from numpy.ma.testutils import assert_equal
 from numpy.ma.testutils import assert_array_equal
 import numpy as np
@@ -26,7 +26,7 @@ class Test(unittest.TestCase):
         layerSizes = [3,2,1]
         NNFactory = PredictionNNFactory(layerSizes)
         NN = NNFactory.get_instance()
-        assert_equal(type(NN), PredictionNN)
+        assert_equal(type(NN), MultilayerPerceptron)
     
     def test_aggregation(self):
         ''' test if aggregation, by averaging, works for a simple example
@@ -82,7 +82,7 @@ class Test(unittest.TestCase):
         
         nnArr = nnFactory.decode([obj_encoded[1]])
         assert type(nnArr) == list, "decoded not as a list"
-        assert type(nnArr[0]) == PredictionNN, "decoded not as LinearRegression"
+        assert type(nnArr[0]) == MultilayerPerceptron, "decoded not as LinearRegression"
     
 
 if __name__ == "__main__":

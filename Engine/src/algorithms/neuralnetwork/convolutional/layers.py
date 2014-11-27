@@ -6,7 +6,6 @@ Created on Aug 26, 2014
 import numpy as np
 import scipy.signal.signaltools as signal
 import utils.numpyutils as nputils
-import skimage.transform as trans
 
 
 class ConvLayer(object):
@@ -18,7 +17,7 @@ class ConvLayer(object):
     and feature map of this layer (fully connected).
     """
 
-    def __init__(self, num_prev_maps, num_maps, kernel_size, activation_func=np.tanh, deriv_activation_func=nputils.tanhDeriv):
+    def __init__(self, num_prev_maps, num_maps, kernel_size, activation_func=np.tanh, deriv_activation_func=nputils.tanh_deriv):
         """
         Creates a new fully connected convolution layer with a kernel for each
         previous feature map and feature map of this layer resulting in
@@ -84,7 +83,7 @@ class ConvLayer(object):
 
     def backpropagate(self, error):
         """
-        TODO
+        Backpropagation based on given error.
         :param error: Error for this layer (backpropagated error)
         :return Error of the previous layer
         """
@@ -120,16 +119,21 @@ class ConvLayer(object):
                 # dimensions ( (kernel_size-1)/2 on each side)
                 fm_error = signal.correlate2d(self.deltas[fm_idx], kernel, mode='full')
                 backprop_error[prev_fm_idx] += fm_error
-
         return backprop_error
 
     def calc_gradients(self):
+        """
+        Calculate the gradients for the kernels of this layer.
+        """
         self.gradients = np.zeros((self.num_prev_maps, self.num_maps, self.kernel_size, self.kernel_size))
         for fm_idx in range(self.num_maps):
             for prev_fm_idx in range(self.num_prev_maps):
                 prev_fm_output = self.inputs[prev_fm_idx]
                 fm_delta = self.deltas[fm_idx]
                 kernel = self.weights[prev_fm_idx, fm_idx]
+                # the gradient is the product of the delta and the activation.
+                # However, here all pixels influenced by a weight have to be
+                # considered.
                 fm_gradient = nputils.rot180(signal.correlate2d(prev_fm_output, fm_delta, mode='valid'))
                 self.gradients[prev_fm_idx, fm_idx] = fm_gradient
 
@@ -140,6 +144,9 @@ class ConvLayer(object):
                 fm_gradient = self.gradients[prev_fm_idx, fm_idx]
                 self.weights[prev_fm_idx, fm_idx] -= learning_rate * fm_gradient
 
+    def set_params(self, params):
+        pass
+
 class MaxPoolLayer(object):
     """
     Layer that takes a number of feature maps and applies max-pooling producing
@@ -147,7 +154,7 @@ class MaxPoolLayer(object):
     feedforward.
     """
 
-    def __init__(self, size, num_maps, activation_func=np.tanh, deriv_activation_func=nputils.tanhDeriv):
+    def __init__(self, size, num_maps, activation_func=np.tanh, deriv_activation_func=nputils.tanh_deriv):
         """
         Creates a new layer that applies max pooling to each non-overlapping
         size * size square of the given inputs.

@@ -4,19 +4,15 @@ Created on Jul 22, 2014
 @author: Simon Hohberg
 """
 import numpy as np
-import scipy.ndimage as nd
-import utils.imageutils as imgutils
-import matplotlib.pyplot as plt
-from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN, \
+from algorithms.neuralnetwork.feedforward.multilayer_perceptron import MultilayerPerceptron, \
     SimpleUpdate
-import scipy.signal.signaltools as signal
-from datahandler.numerical.NumericalDataSet import NumericalDataSet
 import utils.numpyutils as nputils
 from layers import ConvLayer, MaxPoolLayer
 from utils import logging
+from algorithms.AbstractAlgorithm import AbstractAlgorithm
 
 
-class ConvNet(object):
+class ConvNet(AbstractAlgorithm):
 
     def __init__(self, iterations=1, learning_rate=0.5, topo=[('c', 3, 4), ('p', 2), ('c', 3, 4), ('p', 9), ('mlp', 4, 4, 2)]):
         """
@@ -54,7 +50,7 @@ class ConvNet(object):
                 self.add_layer(MaxPoolLayer(layer[1], num_prev_maps))
             # multilayer perceptron
             elif layer[0] == 'mlp':
-                self.mlp = PredictionNN(list(layer[1:]), update_method=SimpleUpdate(self.learning_rate), activation_function=np.tanh, deriv_activation_function=nputils.tanhDeriv)
+                self.mlp = MultilayerPerceptron(list(layer[1:]), do_classification=True, update_method=SimpleUpdate(self.learning_rate), activation_function=np.tanh, deriv_activation_function=nputils.tanh_deriv)
 
     def add_layer(self, layer):
         """
@@ -89,16 +85,22 @@ class ConvNet(object):
             # make sure it is a numpy array
             input_arr = np.array(observation)
             outputs = self.feedforward(input_arr)
-            # pred = np.zeros(outputs[-1].shape)
-            # pred[0, np.argmax(outputs[-1])] = 1.
-            predictions.append(nputils.softmax(outputs[-1]))
+            predictions.append(outputs[-1])
         return predictions
 
     def predict_single(self, input_arr):
-        outputs = self.feedforward(input_arr)
-        return nputils.softmax(outputs[-1])
+        """
+        Predict class for a single observation.
+        :param input_arr: Observation
+        :return: Prediction for given observation
+        """
+        return self.feedforward(input_arr)[-1]
 
     def train(self, data_set):
+        """
+        Train net with given data set.
+        :param data_set: Data set for training.
+        """
         for it in range(self.iterations):
             # randomly select observations as many times as there are
             # observations
@@ -112,13 +114,13 @@ class ConvNet(object):
                 it_error += current_error
 
                 # mlp backpropagation and gradient descent
-                mlp_outputs = outputs[-len(self.mlp.arrLayerSizes):]
+                mlp_outputs = outputs[-len(self.mlp.arr_layer_sizes):]
                 mlp_deltas = self.mlp.backpropagation(mlp_outputs, target_arr)
                 mlp_weight_updates = self.mlp.calculate_weight_updates(mlp_deltas, mlp_outputs)
-                self.mlp.update_method.perform_update(self.mlp.weightsArr, mlp_weight_updates, current_error)
+                self.mlp.update_method.perform_update(self.mlp.weights_arr, mlp_weight_updates, current_error)
                 # layer backpropagation and gradient descent
                 # calculate backpropagated error of first mlp layer
-                backprop_error = np.array([ [x] for x in np.dot(self.mlp.weightsArr[0], mlp_deltas[0].transpose()) ])
+                backprop_error = np.array([[x] for x in np.dot(self.mlp.weights_arr[0], mlp_deltas[0].transpose())])
                 for layer in reversed(self.layers):
                     backprop_error = layer.backpropagate(backprop_error)
                 # calculate the weight gradients and update the weights
@@ -126,5 +128,8 @@ class ConvNet(object):
                     layer.calc_gradients()
                     layer.update(self.learning_rate)
 
-            avg_error = it_error / data_set.get_nr_observations( )
+            avg_error = it_error / data_set.get_nr_observations()
             logging.info("  Avg. error: " + str( avg_error ) + "\n")
+
+    def set_params(self, parameters):
+        pass

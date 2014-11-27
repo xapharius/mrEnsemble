@@ -48,7 +48,7 @@ class PredictionValidator(AbstractValidator):
         @param predictions: list of np.arrays
         @rtype: scalar
         '''
-        return np.sum(nputils.expNPArrayList(map(operator.sub, targets, predictions), 2))/len(predictions)
+        return np.sum(nputils.exp_np_array_list(map(operator.sub, targets, predictions), 2))/len(predictions)
     
     # TODO: prediction with multiple outputs?
     # TODO: SST != SSR + SSE
@@ -61,7 +61,7 @@ class PredictionValidator(AbstractValidator):
         '''
         residuals = map(operator.sub, targets, predictions)
         # sum of squared residuals
-        sse = sum(nputils.expNPArrayList(residuals, 2))
+        sse = sum(nputils.exp_np_array_list(residuals, 2))
         # variance of targets
         sst = np.var(targets)*len(targets)
         return 1 - sse/sst

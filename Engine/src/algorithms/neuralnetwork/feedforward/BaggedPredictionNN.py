@@ -1,5 +1,5 @@
 import numpy as np
-from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN
+from algorithms.neuralnetwork.feedforward.multilayer_perceptron import MultilayerPerceptron
 
 
 class BaggedPredictionNN(object):
@@ -11,8 +11,8 @@ class BaggedPredictionNN(object):
             arr_layer_sizes = [ len(layer)-1 for layer in arr_weights[0] ]
             self.nets = []
             for weights in arr_weights:
-                net = PredictionNN(arr_layer_sizes)
-                net.weightsArr = [ np.array(w) for w in weights ]
+                net = MultilayerPerceptron(arr_layer_sizes)
+                net.weights_arr = [ np.array(w) for w in weights ]
                 self.nets.append(net)
         else:
             raise ValueError()

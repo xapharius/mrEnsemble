@@ -5,7 +5,7 @@ Created on Feb 4, 2014
 '''
 
 from algorithms.AbstractAlgorithmFactory import AbstractAlgorithmFactory
-from algorithms.neuralnetwork.feedforward.PredictionNN import PredictionNN, SimpleUpdate
+from algorithms.neuralnetwork.feedforward.multilayer_perceptron import MultilayerPerceptron, SimpleUpdate
 import numpy as np
 from algorithms.neuralnetwork.feedforward.BaggedPredictionNN import BaggedPredictionNN
 
@@ -30,7 +30,7 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
         '''Create a PredictionNN Object
         :return: Object implementing AbstractAlgorithm
         '''
-        return PredictionNN(self.arrLayerSizes, self.iterations, self.update_method, self.batch_update_size)
+        return MultilayerPerceptron(self.arrLayerSizes, self.iterations, self.update_method, self.batch_update_size)
 
     def aggregate(self, NNArr):
         '''Aggregate all PredictionNN from NNArr Prameter by AVERAGING
@@ -79,7 +79,7 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
             for arr in alg_weightsArr:
                 npWeightsArr.append(np.array(arr))
             # predictinNN can be created since we have a list of npArrays
-            newPredictionNN = PredictionNN(self.arrLayerSizes)
+            newPredictionNN = MultilayerPerceptron(self.arrLayerSizes)
             newPredictionNN.set_params(npWeightsArr)
             alg_list.append(newPredictionNN)
         return alg_list

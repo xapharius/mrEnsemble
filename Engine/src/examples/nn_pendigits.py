@@ -9,8 +9,8 @@ from engine.engine import Engine
 import numpy as np
 from validator.PredictionValidator import PredictionValidator
 from datahandler.numerical.pen_digits_data_proc import PenDigitsDataProcessor
-from algorithms.neuralnetwork.feedforward.PredictionNN import Rprop,\
-    PredictionNN
+from algorithms.neuralnetwork.feedforward.multilayer_perceptron import Rprop,\
+    MultilayerPerceptron
 from algorithms.neuralnetwork.feedforward.BaggedPredictionNN import BaggedPredictionNN
 
 

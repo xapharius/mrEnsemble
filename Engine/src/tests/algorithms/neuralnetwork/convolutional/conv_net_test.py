@@ -1,12 +1,14 @@
-
 import unittest
+
+import numpy as np
+import scipy.signal as signal
+
 import utils.imageutils as imgutils
 import utils.numpyutils as nputils
-import numpy as np
-from convnet.conv_net import ConvNet
+from algorithms.neuralnetwork.convolutional.conv_net import ConvNet
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
 import utils.serialization as srlztn
-import scipy.signal as signal
+
 
 def gen_vertical_bars(num):
     bars = []
