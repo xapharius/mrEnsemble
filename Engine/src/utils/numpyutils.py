@@ -199,3 +199,11 @@ def convert_targets(targets, num_classes):
     for i in range(len(targets)):
         result[i, targets[i]] = 1
     return np.array(result)
+
+
+def rectifier(arr):
+    return np.where(arr < 0, np.zeros(arr.shape), arr)
+
+
+def rectifier_deriv(arr):
+    return np.where(arr <= 0, np.zeros(arr.shape), np.ones(arr.shape))

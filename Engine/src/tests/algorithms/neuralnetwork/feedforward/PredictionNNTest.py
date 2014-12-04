@@ -168,11 +168,11 @@ class Test(unittest.TestCase):
 
         layer_sizes = [16, 16, 10]
         update_method = Rprop(layer_sizes, init_step=0.01)
-        nn = MultilayerPerceptron(layer_sizes, iterations=300, do_classification=True,
+        nn = MultilayerPerceptron(layer_sizes, iterations=100, do_classification=True,
                            update_method=update_method,
                            batch_update_size=30,
-                           activation_function=np.tanh,
-                           deriv_activation_function=nputils.tanh_deriv)
+                           activation_function=nputils.rectifier,
+                           deriv_activation_function=nputils.rectifier_deriv)
 
         training_targets = nputils.convert_targets(training_data[:, -1], 10)
         training_input = training_data[:, 0:-1]

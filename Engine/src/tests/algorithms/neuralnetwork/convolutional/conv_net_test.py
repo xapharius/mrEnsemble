@@ -66,7 +66,7 @@ class Test(unittest.TestCase):
 
         # 28x28 -> C(5): 24x24 -> P(2): 12x12 -> C(5): 8x8 -> P(2): 4x4 -> C(4): 1x1
         net_topo = [('c', 5, 8), ('p', 2), ('c', 5, 16), ('p', 2), ('c', 4, 16), ('mlp', 16, 16, 10)]
-        net = ConvNet(iterations=30, learning_rate=0.01, topo=net_topo)
+        net = ConvNet(iterations=30, learning_rate=0.01, topo=net_topo, activation_func=(nputils.rectifier, nputils.rectifier_deriv))
         net.train(train_data_set)
         try:
             srlztn.save_object('../../trained/mnist_digits.cnn', net)

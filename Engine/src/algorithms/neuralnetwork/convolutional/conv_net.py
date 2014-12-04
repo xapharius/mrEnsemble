@@ -14,7 +14,7 @@ from algorithms.AbstractAlgorithm import AbstractAlgorithm
 
 class ConvNet(AbstractAlgorithm):
 
-    def __init__(self, iterations=1, learning_rate=0.5, topo=[('c', 3, 4), ('p', 2), ('c', 3, 4), ('p', 9), ('mlp', 4, 4, 2)]):
+    def __init__(self, iterations=1, learning_rate=0.5, topo=[('c', 3, 4), ('p', 2), ('c', 3, 4), ('p', 9), ('mlp', 4, 4, 2)], activation_func=(np.tanh, nputils.tanh_deriv)):
         """
         Creates a new convolutional neural network with the given topology
         (architecture), learning rate and number of iterations.
@@ -37,6 +37,8 @@ class ConvNet(AbstractAlgorithm):
         self.iterations = iterations
         self.learning_rate = learning_rate
         self.layers = []
+        self.activ_func = activation_func[0]
+        self.deriv_acitv_func = activation_func[1]
         num_prev_maps = 1
         # parse topology
         for layer in topo:
@@ -50,7 +52,7 @@ class ConvNet(AbstractAlgorithm):
                 self.add_layer(MaxPoolLayer(layer[1], num_prev_maps))
             # multilayer perceptron
             elif layer[0] == 'mlp':
-                self.mlp = MultilayerPerceptron(list(layer[1:]), do_classification=True, update_method=SimpleUpdate(self.learning_rate), activation_function=np.tanh, deriv_activation_function=nputils.tanh_deriv)
+                self.mlp = MultilayerPerceptron(list(layer[1:]), do_classification=True, update_method=SimpleUpdate(self.learning_rate), activation_function=self.activ_func, deriv_activation_function=self.deriv_acitv_func)
 
     def add_layer(self, layer):
         """
