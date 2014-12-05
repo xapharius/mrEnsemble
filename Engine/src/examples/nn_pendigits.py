@@ -9,9 +9,10 @@ from engine.engine import Engine
 import numpy as np
 from validator.PredictionValidator import PredictionValidator
 from datahandler.numerical.pen_digits_data_proc import PenDigitsDataProcessor
-from algorithms.neuralnetwork.feedforward.multilayer_perceptron import Rprop,\
-    MultilayerPerceptron
+from algorithms.neuralnetwork.updatemethods.rprop import Rprop
+from algorithms.neuralnetwork.feedforward.multilayer_perceptron import MultilayerPerceptron
 from algorithms.neuralnetwork.feedforward.BaggedPredictionNN import BaggedPredictionNN
+import utils.numpyutils as nputils
 
 
 if __name__ == '__main__':
@@ -26,7 +27,7 @@ if __name__ == '__main__':
     batch_update_size = 10
     lines_per_map = 300
     update_method = Rprop(arr_layer_sizes, init_step=0.005)
-    run_type = HADOOP
+    run_type = EMR
     data_file = '../data/pendigits-training.txt'
     validation_data_file = '../data/pendigits-testing.txt'
     input_scalling = PenDigitsDataProcessor.NORMALIZE
@@ -44,10 +45,9 @@ if __name__ == '__main__':
           )
     
     # 1. define algorithm
-    pred_nn = PredictionNNFactory(arr_layer_sizes, iterations=iterations, update_method=update_method, batch_update_size=batch_update_size)
+    pred_nn = PredictionNNFactory(arr_layer_sizes, iterations=iterations, update_method=update_method, batch_update_size=batch_update_size, do_classification=True, activ_func=(nputils.rectifier, nputils.rectifier_deriv))
     
     # 2. set data handler (pre-processing, normalization, data set creation)
-    
     data_handler = NumericalDataHandler(nr_params, nr_label_dim)
     data_handler.LINES_PER_MAP = lines_per_map
     data_handler.set_data_processor(PenDigitsDataProcessor(nr_params, input_scalling=input_scalling))

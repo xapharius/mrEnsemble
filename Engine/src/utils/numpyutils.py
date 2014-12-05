@@ -207,3 +207,19 @@ def rectifier(arr):
 
 def rectifier_deriv(arr):
     return np.where(arr <= 0, np.zeros(arr.shape), np.ones(arr.shape))
+
+
+def create_confidence_matrix(predictions, actual, num_classes, add_labels=False):
+    '''
+    Creates a 2D numpy array representing the confidence matrix for given
+    predictions and actual classses, where the row specify the actual class and
+    the column the predicted class.
+    '''
+    conf_mat = np.zeros((num_classes, num_classes))
+    for a, p in zip([np.argmax(a) for a in actual], [np.argmax(x) for x in predictions]):
+        conf_mat[a, p] += 1
+    # add labels
+    if add_labels:
+        conf_mat = np.concatenate( ( [np.arange(0, num_classes)], conf_mat ), axis=0)
+        conf_mat = np.concatenate( ( np.transpose([np.arange(-1, num_classes)]), conf_mat ), axis=1)
+    return conf_mat

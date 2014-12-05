@@ -8,6 +8,7 @@ from algorithms.AbstractAlgorithmFactory import AbstractAlgorithmFactory
 from algorithms.neuralnetwork.feedforward.multilayer_perceptron import MultilayerPerceptron, SimpleUpdate
 import numpy as np
 from algorithms.neuralnetwork.feedforward.BaggedPredictionNN import BaggedPredictionNN
+import utils.numpyutils as nputils
 
 class PredictionNNFactory(AbstractAlgorithmFactory):
     '''
@@ -16,7 +17,7 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
     '''
 
 
-    def __init__(self, arrLayerSizes, iterations=1, update_method=SimpleUpdate(0.5), batch_update_size=1):
+    def __init__(self, arrLayerSizes, iterations=1, update_method=SimpleUpdate(0.5), batch_update_size=1, activ_func=(nputils.sigmoid_np_arr, nputils.sigmoid_deriv_np_arr), do_classification=False):
         '''
         Initializes the Factory and sets the parameters for the Model
         '''
@@ -25,15 +26,17 @@ class PredictionNNFactory(AbstractAlgorithmFactory):
         self.iterations = iterations
         self.batch_update_size = batch_update_size
         self.update_method = update_method
+        self.activ_func = activ_func
+        self.do_classification = do_classification
 
     def get_instance(self):
         '''Create a PredictionNN Object
         :return: Object implementing AbstractAlgorithm
         '''
-        return MultilayerPerceptron(self.arrLayerSizes, self.iterations, self.update_method, self.batch_update_size)
+        return MultilayerPerceptron(self.arrLayerSizes, self.iterations, self.update_method, self.batch_update_size, activ_func=self.activ_func, do_classification=self.do_classification)
 
     def aggregate(self, NNArr):
-        '''Aggregate all PredictionNN from NNArr Prameter by AVERAGING
+        '''Aggregate all PredictionNN from NNArr Parameter by AVERAGING
         :param NNArr: (normal)array of PredictionNN
         :return combined PredictionNN
         '''

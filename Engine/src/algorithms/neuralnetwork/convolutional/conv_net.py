@@ -52,7 +52,7 @@ class ConvNet(AbstractAlgorithm):
                 self.add_layer(MaxPoolLayer(layer[1], num_prev_maps))
             # multilayer perceptron
             elif layer[0] == 'mlp':
-                self.mlp = MultilayerPerceptron(list(layer[1:]), do_classification=True, update_method=SimpleUpdate(self.learning_rate), activation_function=self.activ_func, deriv_activation_function=self.deriv_acitv_func)
+                self.mlp = MultilayerPerceptron(list(layer[1:]), do_classification=True, update_method=SimpleUpdate(self.learning_rate), activ_func=(self.activ_func, self.deriv_acitv_func))
 
     def add_layer(self, layer):
         """
@@ -108,7 +108,7 @@ class ConvNet(AbstractAlgorithm):
             # observations
             logging.info("Iteration #" + str(it + 1))
             it_error = 0
-            for o in range(data_set.get_nr_observations()):
+            for _ in range(data_set.get_nr_observations()):
                 input_arr, target_arr = data_set.rand_observation()
                 # feed-forward
                 outputs = self.feedforward(input_arr)

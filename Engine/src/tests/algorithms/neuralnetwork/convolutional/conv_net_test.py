@@ -1,7 +1,6 @@
 import unittest
 
 import numpy as np
-import scipy.signal as signal
 
 import utils.imageutils as imgutils
 import utils.numpyutils as nputils
@@ -51,10 +50,7 @@ class Test(unittest.TestCase):
         net.train(data_set)
 
         preds = net.predict(test_data_set)
-        conf_mat = np.zeros((2, 2))
-        for t, p in zip([np.argmax(t) for t in test_targets], [np.argmax(x) for x in preds]):
-            conf_mat[t, p] += 1
-        print conf_mat
+        conf_mat = nputils.create_confidence_matrix(preds, test_targets, 2)
         print "Error rate: " + str(100 - (np.sum(conf_mat.diagonal()) / np.sum(conf_mat[:, :]) * 100)) + "%"
 
 
@@ -74,9 +70,8 @@ class Test(unittest.TestCase):
             print("serialization error")
 
         preds = net.predict(test_data_set)
-        conf_mat = np.zeros((10, 10))
-        for t, p in zip([np.argmax(t) for t in targets[150:]], [np.argmax(x) for x in preds]):
-            conf_mat[t, p] += 1
+        
+        conf_mat = nputils.create_confidence_matrix(preds, targets[150:], 10)
         print conf_mat
         num_correct = np.sum(conf_mat.diagonal())
         num_all = np.sum(conf_mat[:, :])
@@ -104,10 +99,7 @@ class Test(unittest.TestCase):
         net = ConvNet(iterations=30, learning_rate=0.01, topo=net_topo)
         net.train(data_set_training)
         preds = net.predict(data_set_testing)
-        conf_mat = np.zeros((2, 2))
-        for t, p in zip([np.argmax(y) for y in targets_testing], [np.argmax(x) for x in preds]):
-            conf_mat[t, p] += 1
-        print conf_mat
+        conf_mat = nputils.create_confidence_matrix(preds, targets_testing, 2)
         num_correct = np.sum(conf_mat.diagonal())
         num_all = np.sum(conf_mat[:, :])
         print "Error rate: " + str(100 - (num_correct / num_all * 100)) + "% (" + str(int(num_correct)) + "/" + str(int(num_all)) + ")"
@@ -133,13 +125,6 @@ class Test(unittest.TestCase):
         # plt.imshow(np.array([[mlp_out[2][0, 1]]]), vmin=0, vmax=1)
         #
         # plt.show()
-
-
-    def test_pseudo_corr(self):
-        img = np.random.random((4,4))
-        kernel = np.random.random((5,5))
-        print imgutils.pseudo_convolve2d(img, kernel)
-        print nputils.rot180(signal.correlate2d(img, kernel, mode="full", boundary="wrap")[:kernel.shape[0], :kernel.shape[1]])
 
 
 if __name__ == "__main__":

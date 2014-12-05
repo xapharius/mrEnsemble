@@ -11,7 +11,7 @@ class BaggedPredictionNN(object):
             arr_layer_sizes = [ len(layer)-1 for layer in arr_weights[0] ]
             self.nets = []
             for weights in arr_weights:
-                net = MultilayerPerceptron(arr_layer_sizes)
+                net = MultilayerPerceptron(arr_layer_sizes, do_classification=True)
                 net.weights_arr = [ np.array(w) for w in weights ]
                 self.nets.append(net)
         else:

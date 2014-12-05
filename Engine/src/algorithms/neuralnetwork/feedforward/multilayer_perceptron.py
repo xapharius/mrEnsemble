@@ -17,8 +17,7 @@ class MultilayerPerceptron(AbstractAlgorithm):
 
     def __init__(self, arr_layer_sizes, iterations=1, do_classification=False,
                   update_method=SimpleUpdate(0.5), batch_update_size=1,
-                  activation_function=nputils.sigmoid_np_arr,
-                  deriv_activation_function=nputils.sigmoid_deriv):
+                  activ_func=(nputils.sigmoid_np_arr, nputils.sigmoid_deriv)):
         """
         Creates a Prediction Neural Network - weights 
         :param arr_layer_sizes: list with number of neurons each layer should
@@ -27,7 +26,7 @@ class MultilayerPerceptron(AbstractAlgorithm):
         performed on the given data set when doing training
         :param do_classification: (optional) if set to true last layer also
         applies the activation function, otherwise not.
-        :param update_method: optional (default is SimpleUpdate with lerning
+        :param update_method: optional (default is SimpleUpdate with learning
         rate of 0.5)Update method to be used for weight update
         :param batch_update_size: optional (default is 1), specifies the number
         of training examples to look at before applying a weight update. A size
@@ -41,8 +40,8 @@ class MultilayerPerceptron(AbstractAlgorithm):
         self.iterations = iterations
         self.batch_update_size = batch_update_size
         self.update_method = update_method
-        self.activation_function = activation_function
-        self.deriv_activation_function = deriv_activation_function
+        self.activation_function = activ_func[0]
+        self.deriv_activation_function = activ_func[1]
 
         weights_arr = []
         for layer in range(len(arr_layer_sizes) - 1):
