@@ -127,6 +127,19 @@ class Test(unittest.TestCase):
         # plt.show()
 
 
+    def test_smoke(self):
+        smoke_imgs_training = imgutils.load_images('/home/simon/smoke/training/smoke/', max_num=100)
+        non_smoke_imgs_training = imgutils.load_images('/home/simon/smoke/training/non-smoke/', max_num=100)
+
+        inputs_training = np.array(smoke_imgs_training + non_smoke_imgs_training)
+        targets_training = np.array([ [1, 0] for _ in range(len(smoke_imgs_training))] + [ [0, 1] for _ in range(len(non_smoke_imgs_training))])
+        data_set_training = NumericalDataSet(inputs_training, targets_training)
+
+        # 100x100 -> C(5): 96x96 -> P(2): 48x48 -> C(5): 44x44 -> P(2): 22x22 -> C(3): 20x20 -> P(2): 10x10 -> C(3): 8x8 -> P(2) 4x4 -> C(3): 2x2 -> P(2): 1x1
+        net_topo = [('c', 5, 8), ('p', 2), ('c', 5, 16), ('p', 2), ('c', 3, 24), ('p', 2), ('c', 3, 24), ('p', 2), ('c', 3, 24), ('p', 2), ('mlp', 24, 24, 2)]
+        net = ConvNet(iterations=30, learning_rate=0.01, topo=net_topo)
+        net.train(data_set_training)
+
 if __name__ == "__main__":
     #import sys;sys.argv = ['', 'Test.testName']
     unittest.main()

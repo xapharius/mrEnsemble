@@ -13,6 +13,8 @@ from algorithms.neuralnetwork.updatemethods.simple_update import SimpleUpdate
 class MultilayerPerceptron(AbstractAlgorithm):
     """
     Predictive Feed Forward Neural Network Class
+
+    :type weights_arr: list[numpy.ndarray.ndarray]
     """
 
     def __init__(self, arr_layer_sizes, iterations=1, do_classification=False,
@@ -22,16 +24,22 @@ class MultilayerPerceptron(AbstractAlgorithm):
         Creates a Prediction Neural Network - weights 
         :param arr_layer_sizes: list with number of neurons each layer should
         have. index starts with input layer.
+        :type arr_layer_sizes: list[int]
         :param iterations: optional (default is 1), number of iterations
         performed on the given data set when doing training
         :param do_classification: (optional) if set to true last layer also
         applies the activation function, otherwise not.
+        :type do_classification: bool
         :param update_method: optional (default is SimpleUpdate with learning
         rate of 0.5)Update method to be used for weight update
+        :type update_method: algorithms.neuralnetwork.updatemethods.abstract_update_method.AbstractUpdateMethod
         :param batch_update_size: optional (default is 1), specifies the number
         of training examples to look at before applying a weight update. A size
         of 1 is usually referred to as stochastic (or incremental) gradient 
         descent whereas a value greater 1 is known as batch gradient descent.
+        :type batch_update_size: int
+        :param activ_func:
+        :type activ_func: ((float)->float, (float)->float)
         """
         # Sizes for each layer, 0 is input layer
         self.do_classification = do_classification
@@ -58,6 +66,7 @@ class MultilayerPerceptron(AbstractAlgorithm):
         """
         Online Training for given dataset
         :param data_set: NumericalDataSet
+        :type data_set: datahandler.numerical.NumericalDataSet.NumericalDataSet
         """
         for it in range(self.iterations):
             # randomly select observations as many times as there are
@@ -97,8 +106,9 @@ class MultilayerPerceptron(AbstractAlgorithm):
         """
         Predicts targets for given data set
         :param data_set: data Set inheriting AbstractDataSet
-        :return: outputs from the feed forward on each row
-        :rtype: list of numpy.ndarray (nr_obs * nr_output_neurons)
+        :type data_set: datahandler.numerical.NumericalDataSet.NumericalDataSet
+        :return: outputs from the feed forward on each row (nr_obs * nr_output_neurons)
+        :rtype: list[numpy.ndarray.ndarray]
         """
         predictions = []
         # loop through dataset
@@ -116,7 +126,8 @@ class MultilayerPerceptron(AbstractAlgorithm):
     def set_params(self, parameters):
         """
         Set parameters of predefined model (shape of parameters already specified)
-        :param parameters: array of np.array
+        :param parameters: new parameters
+        :type parameters: list[numpy.ndarray]
         :raise exception: if given parameters don't match in shape with model
         """
         for wIndex in range(len(parameters)):
@@ -133,6 +144,7 @@ class MultilayerPerceptron(AbstractAlgorithm):
         """
         Feed inputs forward through net.
         :param input_vec: nparray of inputs. Size defined by input layer. Row vector shape = (1,x) hint: np.array([[1,2,3]])
+        :type input_vec: numpy.ndarray.ndarray
         :return: activations for each layer shape = (1,x).
         :rtype: array of np.Arrays(1dim), for each layer one (weight layers + 1)
         :raise exception: if given input size doesn't match with input layer
