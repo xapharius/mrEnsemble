@@ -1,6 +1,12 @@
 *.py[cod]
 *.pydevproject
-*.idea
+
+# PyCharm
+.idea
+
+# Spyder
+.spyderworkspace
+.spyderproject
 
 # C extensions
 *.so

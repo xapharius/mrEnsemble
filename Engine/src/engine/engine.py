@@ -122,7 +122,8 @@ class Engine(MRJob):
         
         # TODO: cleanup pkl files
         
-        return self.alg_factory.decode([trained_alg])[0]
+#        return trained_alg
+            return self.alg_factory.decode([trained_alg])[0]
 
 
     def validate(self, alg, validator, _run_type=run_type.HADOOP, data_file=None):

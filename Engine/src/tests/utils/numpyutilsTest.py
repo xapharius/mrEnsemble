@@ -18,17 +18,17 @@ class numpyutilsTest(unittest.TestCase):
         '''
         #vector array
         vec = np.array([1,2,3])
-        vecOne = nputils.addOneToVec(vec)
+        vecOne = nputils.add_one_to_vec(vec)
         assert vecOne.shape[0] == 1 and vecOne.shape[1] == vec.shape[0]+1, "anddOneToVec fails for normal vec (x,)"
         
         #row vector array
         vec = np.array([[1,2,3]])
-        vecOne = nputils.addOneToVec(vec)
+        vecOne = nputils.add_one_to_vec(vec)
         assert vecOne.shape[0] == 1 and vecOne.shape[1] == vec.shape[1]+1, "anddOneToVec fails for row vec (1,x)"
         
         #row vector array
         vec = np.array([[1],[2],[3]])
-        vecOne = nputils.addOneToVec(vec)
+        vecOne = nputils.add_one_to_vec(vec)
         assert vecOne.shape[1] == 1 and vecOne.shape[0] == vec.shape[0]+1, "anddOneToVec fails for row vec (1,x)"
         
     def testaddOneToVec_neg(self):
@@ -38,7 +38,7 @@ class numpyutilsTest(unittest.TestCase):
         
         mat = np.array([[1,2,3],[4,5,6]])
         try:
-            nputils.addOneToVec(mat)
+            nputils.add_one_to_vec(mat)
             assert(False)
         except:
             expected_errmsg = "addOne works only for one dimensional vectors"
