@@ -19,31 +19,29 @@ class Test(unittest.TestCase):
 
 
     def test_constructor(self):
-        bs = BootstrapSampler(100)
-        assert bs.sampleSize == 100
+        bs = BootstrapSampler(0.5)
+        assert bs.sample_size_ratio == 0.5
+        self.assertRaises(Exception, BootstrapSampler, -0.1)
+        self.assertRaises(Exception, BootstrapSampler, 10)
 
     def test_data_not_bound(self):
-        bs = BootstrapSampler(100)
-        try:
-            bs.sample()
-        except Exception:
-            return
-        assert False
-
-    def test_sampleSize(self):
         bs = BootstrapSampler()
-        assert bs.sampleSize == None
+        self.assertRaises(Exception, bs.sample)
+
+    def test_sample_size(self):
+        bs = BootstrapSampler()
+        assert bs.sample_size == None
         bs.bind_data(self.data)
-        assert bs.sampleSize == self.data.shape[0]
+        assert bs.sample_size == self.data.shape[0]
 
     def test_sample(self):
-        bs = BootstrapSampler(100)
+        bs = BootstrapSampler(0.5)
         bs.bind_data(self.data)
         sample = bs.sample()
 
-        assert bs.nrSamples == 1
+        assert bs.nr_samples == 1
         assert len(bs.sample_hists) == 1
-        assert sample.shape[0] == 100
+        assert sample.shape[0] == int(round(0.5 * self.data.shape[0]))
         assert sample.shape[1] == self.data.shape[1]
         assert not (bs.data_hist == np.zeros(self.data.shape[0])).all()
     '''
