@@ -22,8 +22,15 @@ class NumericalFeatureSelector(AbstractFeatureSelector):
         self.nr_input_dim = nr_input_dim
         self.nr_target_dim = nr_target_dim
         self.random_subset_of_features_ratio = random_subset_of_features_ratio
-        self.feature_indices = None
-        self.number_of_features = None
+        # select features
+        if self.random_subset_of_features_ratio == 1:
+            self.number_of_features = nr_input_dim
+            self.feature_indices = range(nr_input_dim)
+        else:
+            # create index vector for random subset of features
+            self.number_of_features = int(round(self.random_subset_of_features_ratio * nr_input_dim))
+            if self.number_of_features == 0: self.number_of_features = 1 # take atleast one feature
+            self.feature_indices = random.sample(range(nr_input_dim), self.number_of_features)
         super(AbstractFeatureSelector, self).__init__()
 
     def get_dataset(self, raw_data):
@@ -38,15 +45,6 @@ class NumericalFeatureSelector(AbstractFeatureSelector):
             targets = raw_data[:, raw_data.shape[1] - self.nr_target_dim:]
         else:
             targets = None
-
-        total_columns = inputs.shape[1]
-        if self.random_subset_of_features_ratio == 1:
-            self.number_of_features = total_columns
-            self.feature_indices = range(total_columns)
-        elif self.feature_indices is None:
-            # create index vector for random subset of features
-            self.number_of_features = int(round(self.random_subset_of_features_ratio * total_columns))
-            self.feature_indices = random.sample(range(total_columns), self.number_of_features)
 
         input_subset = inputs[:, self.feature_indices]
 
