@@ -63,7 +63,7 @@ class Test(unittest.TestCase):
         assert dataset.targets.shape == (3,1)
         print (features == nfs.feature_indices)
         assert (features == nfs.feature_indices)
-        
+
     def test_alteast_one_feature(self):
         '''
         Returns atleast one feature
