@@ -58,10 +58,10 @@ class Test(unittest.TestCase):
         assert dataset.targets.shape == (3,1)
         features = nfs.feature_indices
 
+        raw_data = np.array([[1,2],[3,4],[5,6]])
         dataset = nfs.get_dataset(raw_data)
         assert dataset.inputs.shape == (3,1)
-        assert dataset.targets.shape == (3,1)
-        print (features == nfs.feature_indices)
+        assert dataset.targets is None
         assert (features == nfs.feature_indices)
 
     def test_alteast_one_feature(self):

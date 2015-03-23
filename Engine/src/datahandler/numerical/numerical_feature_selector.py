@@ -37,18 +37,22 @@ class NumericalFeatureSelector(AbstractFeatureSelector):
         '''
         @param raw_data: numpy.ndarray inputs and targets
         '''
+        targets = None #default, in case not supplied
 
+        if raw_data.shape[1] > self.nr_input_dim:
+            # should contain targets as well
+            if self.nr_target_dim is not None:
+                if self.nr_input_dim + self.nr_target_dim != raw_data.shape[1]:
+                    raise Exception("input and target dimensions don't add up to raw_data column size")
+                targets = raw_data[:, raw_data.shape[1] - self.nr_target_dim:]
+        elif raw_data.shape[1] < self.nr_input_dim:
+            raise Exception("Too few variables")
+
+        # else = only inputs are supplied
         inputs = raw_data[:, :self.nr_input_dim]
-        if self.nr_target_dim is not None:
-            if self.nr_input_dim + self.nr_target_dim != raw_data.shape[1]:
-                raise Exception("input and target dimensions don't add up to raw_data column size")
-            targets = raw_data[:, raw_data.shape[1] - self.nr_target_dim:]
-        else:
-            targets = None
-
         input_subset = inputs[:, self.feature_indices]
 
-        #TODO: maybe generate some polinomial features here
+        #TODO: maybe generate some polinomial or pca features here
 
         return NumericalDataSet(input_subset, targets)
 
