@@ -8,7 +8,7 @@ import numpy as np
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
 from numpy.ma.testutils import assert_equal
 
-class Test(unittest.TestCase):
+class NumericalDatasetTest(unittest.TestCase):
     
     def test_constructor_all_params(self):
         '''

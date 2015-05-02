@@ -6,15 +6,17 @@ Created on Mar 23, 2015
 import unittest
 import numpy as np
 from datahandler.numerical.numerical_data_handler import NumericalDataHandler
-from factories import HomogenousFactory
+from factory import HomogenousFactory
 from sklearn.linear_model import LinearRegression
 from datahandler.numerical.numerical_feature_selector import NumericalFeatureSelector
+import os
 
 class HomogenousFactoryTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        datapath = "../../../../data/wine-quality/winequality-red.csv"
+        dir_path =  os.getcwd().split("Engine")[0]
+        datapath = dir_path + "data/wine-quality/winequality-red.csv"
         cls.data = np.loadtxt(open(datapath, "rb"), delimiter = ";")
         cls.datahandler = NumericalDataHandler(11, 1, random_subset_of_features = True)
 

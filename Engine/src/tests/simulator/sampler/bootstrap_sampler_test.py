@@ -6,12 +6,14 @@ Created on Feb 18, 2015
 import unittest
 import numpy as np
 from simulator.sampler.bootstrap_sampler import BootstrapSampler
+import os
 
-class Test(unittest.TestCase):
+class BootstrapSamplerTest(unittest.TestCase):
 
 
     def setUp(self):
-        datapath = "../../../../../data/wine-quality/winequality-red.csv"
+        dir_path =  os.getcwd().split("Engine")[0]
+        datapath = dir_path + "data/wine-quality/winequality-red.csv"
         self.data = np.loadtxt(open(datapath, "rb"), delimiter = ";")
 
     def tearDown(self):

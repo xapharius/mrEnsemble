@@ -11,7 +11,7 @@ class concAS(AbstractSampler):
     def sample(self):
         pass
 
-class Test(unittest.TestCase):
+class AbstractSamplerTest(unittest.TestCase):
 
  
     def setUp(self):

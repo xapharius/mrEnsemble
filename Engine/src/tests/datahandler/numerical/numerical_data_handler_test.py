@@ -9,7 +9,7 @@ from datahandler.numerical.NumericalDataSet import NumericalDataSet
 from datahandler.numerical.numerical_data_handler import NumericalDataHandler
 import numpy as np
 
-class Test(unittest.TestCase):
+class NumericalDatahandlerTest(unittest.TestCase):
 
     def test_no_rsof(self):
         '''

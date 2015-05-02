@@ -8,7 +8,7 @@ from datahandler.numerical.numerical_feature_selector import NumericalFeatureSel
 from datahandler.numerical.NumericalDataSet import NumericalDataSet
 import numpy as np
 
-class Test(unittest.TestCase):
+class NumericalFeatureSelectorTest(unittest.TestCase):
 
 
     def test_constructor(self):
