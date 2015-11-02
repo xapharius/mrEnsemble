@@ -45,3 +45,6 @@ nosetests.xml
 
 # temp files
 *~
+
+# data folder, since too big
+data/
