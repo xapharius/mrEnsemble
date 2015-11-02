@@ -19,18 +19,20 @@ class AbstractSampler(object):
         '''
         Constructor
         '''
-        self.dataset = None
+        self.inputs = None
+        self.targets = None
         self.nr_obs = None
         self.data_hist = None
         self.sample_hists = None
         self.nr_samples = None
 
-    def bind_data(self, dataset):
+    def bind_data(self, inputs, targets=None):
         '''
         Bind dataset to Sampler in order to record statistics during sampling
         '''
-        self.dataset = dataset
-        self.nr_obs = len(dataset)
+        self.inputs = inputs
+        self.targets = targets
+        self.nr_obs = len(inputs)
         self.nr_samples = 0
         self.data_hist = np.zeros(self.nr_obs)   # how often each element has been sampled
         self.sample_hists = []              # array of histograms for each sample

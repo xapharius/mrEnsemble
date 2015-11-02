@@ -5,7 +5,7 @@ Created on Jan 8, 2014
 '''
 
 from abc import ABCMeta, abstractmethod
-from engine import constants
+from engine.constants.internal import PHASE_PRE_PROC
 
 class AbstractDataHandler(object):
     '''
@@ -19,7 +19,7 @@ class AbstractDataHandler(object):
         '''
         Constructor
         '''
-        self.phase = constants.internal.PHASE_PRE_PROC
+        self.phase = PHASE_PRE_PROC
     
     def set_phase(self, new_phase):
         self.phase = new_phase

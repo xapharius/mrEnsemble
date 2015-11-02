@@ -34,7 +34,7 @@ class SciPyLinReg(AbstractAlgorithm):
     def predict(self, data_set):
         result = []
         for _input, _ in data_set.gen_observations():
-            result.append(self.lin_reg.predict(_input))
+            result.append(round(self.lin_reg.predict(_input)))
         return result
 
     def get_params(self):

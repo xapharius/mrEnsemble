@@ -6,7 +6,7 @@ Created on Mar 15, 2015
 
 from abc import ABCMeta, abstractmethod
 
-class AbstractFeatureSelector(object):
+class AbstractFeatureEngineer(object):
     '''
     Object part of a Model acting as a processor of the raw data to a DataSet object
     Allows feature engineering options to the data eg random subset of features 

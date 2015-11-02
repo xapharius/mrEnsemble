@@ -64,7 +64,9 @@ def load_mnist_digits(digits_file_name, labels_file_name, max_num=-1):
         images.append(np.array([int(b.encode('hex'), 16) for b in digits_file.read(num_rows*num_cols)]).reshape(num_rows, num_cols))
         labels.append(int(labels_file.read(1).encode('hex'), 16))
 
-    return images, labels
+    images = np.array(images)
+    targets = np.array([nputils.vec_with_one(10, digit) for digit in labels])
+    return images, targets
 
 def pseudo_convolve2d(img, kernel):
     result = np.zeros(img.shape)

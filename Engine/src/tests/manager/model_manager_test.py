@@ -6,7 +6,7 @@ Created on Mar 18, 2015
 import unittest
 from manager import *
 from sklearn.linear_model import LinearRegression
-from datahandler.numerical import NumericalFeatureSelector
+from datahandler.numerical2.numerical_feature_engineer import NumericalFeatureEngineer
 import numpy as np
 import os
 
@@ -21,16 +21,16 @@ class ModelManagerTest(unittest.TestCase):
 
     def test_train(self):
         model = LinearRegression()
-        feature_selector = NumericalFeatureSelector(11, 1)
-        manager = ModelManager(model, feature_selector)
+        feature_engineer = NumericalFeatureEngineer()
+        manager = ModelManager(model, feature_engineer)
         manager.train(self.data)
         assert manager.training_performance is not None
 
 
     def test_predict(self):
         model = LinearRegression()
-        feature_selector = NumericalFeatureSelector(11, 1)
-        manager = ModelManager(model, feature_selector)
+        feature_engineer = NumericalFeatureEngineer()
+        manager = ModelManager(model, feature_engineer)
         manager.train(self.data)
         results = manager.predict(self.data[:10,:])
         assert results.shape[0] == 10

@@ -4,6 +4,7 @@ Created on Mar 22, 2014
 @author: linda
 '''
 from engine.engine_job import EngineJob
+from utils import logging
 
 class TrainingJob(EngineJob):
     '''

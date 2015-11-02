@@ -19,15 +19,12 @@ class RegressionValidator(AbstractValidator):
         '''
         pass
 
-    #TODO: not type DataSet
-    def validate(self, alg, dataset):
+    def validate(self, alg, inputs, targets):
         '''
-        @param dataset: should be actually type DataSet
+        @param inputs: raw inputs
         '''
         metrics = {}
-
-        predictions = alg.predict(dataset)
-        targets = dataset.targets
+        predictions = alg.predict(inputs)
 
         metrics["Explained Variance"] = sklearn.metrics.explained_variance_score(targets, predictions)
         metrics["R2 Score"] = sklearn.metrics.r2_score(targets, predictions)

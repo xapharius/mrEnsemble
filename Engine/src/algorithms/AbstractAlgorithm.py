@@ -14,7 +14,7 @@ class AbstractAlgorithm(object):
     __metaclass__ = ABCMeta
     
     @abstractmethod
-    def train(self, dataSet):
+    def fit(self, dataSet):
         '''
         @param dataSet: AbstractDataSet
         '''

@@ -14,7 +14,7 @@ class NumericalDataHandler(AbstractDataHandler):
     DataHanlder for numerical data.
     '''
 
-    LINES_PER_MAP = 20
+    LINES_PER_MAP = 100
 
     def __init__(self, nrInputDim, nrLabelDim, input_scalling=None, target_scalling=None):
         '''

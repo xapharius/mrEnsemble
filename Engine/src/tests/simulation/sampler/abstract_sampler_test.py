@@ -4,7 +4,7 @@ Created on Feb 18, 2015
 @author: xapharius
 '''
 import unittest
-from simulator.sampler.abstract_sampler import AbstractSampler
+from simulation.sampler.abstract_sampler import AbstractSampler
 import numpy as np
 
 class concAS(AbstractSampler):

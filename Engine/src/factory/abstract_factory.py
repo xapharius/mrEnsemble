@@ -7,7 +7,7 @@ from abc import ABCMeta, abstractmethod
 
 class AbstractFactory(object):
     '''
-    Factories that instanciate managers aka Algorithm + FeatureSelector
+    Factories that instanciate managers aka Algorithm + FeatureEngineer
     '''
     __metaclass__ = ABCMeta
 

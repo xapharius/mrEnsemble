@@ -10,7 +10,7 @@ def get_suite():
     numerical_test_suite = unittest.TestSuite()
     numerical_test_suite.addTests(unittest.makeSuite(NumericalDatahandlerTest))
     numerical_test_suite.addTests(unittest.makeSuite(NumericalDatasetTest))
-    numerical_test_suite.addTests(unittest.makeSuite(NumericalFeatureSelectorTest))
+    numerical_test_suite.addTests(unittest.makeSuite(NumericalFeatureEngineerTest))
     return numerical_test_suite
 
 if __name__ == '__main__':

@@ -5,12 +5,13 @@ Created on Mar 22, 2015
 '''
 import unittest
 import numpy as np
-from simulator.sampler.bootstrap_sampler import BootstrapSampler
+from simulation.sampler.bootstrap_sampler import BootstrapSampler
 from factory.homogenous_factory import HomogenousFactory
-from datahandler.numerical.numerical_data_handler import NumericalDataHandler
+from datahandler.numerical2.numerical_data_handler import NumericalDataHandler
 from sklearn.linear_model import LinearRegression
 from ensemble.regression.bag import Bag
 import os
+from factory.algorithm_factory import AlgorithmFactory
 
 class BagTest(unittest.TestCase):
 
@@ -23,8 +24,9 @@ class BagTest(unittest.TestCase):
         cls.sampler.bind_data(cls.data)
 
     def test_run(self):
-        datahandler = NumericalDataHandler(nr_input_dim = 11, nr_target_dim = 1, random_subset_of_features=True)
-        factory = HomogenousFactory(datahandler = datahandler, algorithm_class= LinearRegression)
+        datahandler = NumericalDataHandler(random_subset_of_features=True)
+        algf = AlgorithmFactory(LinearRegression)
+        factory = HomogenousFactory(datahandler, algf)
         manager1 = factory.get_instance()
         manager1.train(self.sampler.sample())
         manager2 = factory.get_instance()

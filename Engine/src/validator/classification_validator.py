@@ -18,19 +18,19 @@ class ClassificationValidator(AbstractValidator):
         '''
         pass
 
-    def validate(self, alg, dataset):
+    def validate(self, alg, inputs, targets):
+        '''
+        @param inputs: raw inputs
+        '''
         metrics = {}
-        predictions = alg.predict(dataset)
-        targets = dataset.targets
+        predictions = alg.predict(inputs)
+        print len(predictions), predictions.sum()
 
         metrics["Accuracy"] = sklearn.metrics.accuracy_score(targets, predictions)
-        metrics["F1"] = sklearn.metrics.f1_score(targets, predictions)
-        metrics["Precision"] = sklearn.metrics.precision_score(targets, predictions)
-        metrics["Recall"] = sklearn.metrics.recall_score(targets, predictions)
-        if len(np.unique(targets)) == 2:
-            # works only for binary targets
-            metrics["Average Precision"] = sklearn.metrics.average_precision_score(targets, predictions)
-            metrics["ROC_AUC"] = sklearn.metrics.roc_auc_score(targets, predictions)
+        metrics["Precision"] = sklearn.metrics.precision_score(targets, predictions, average="weighted")
+        metrics["Recall"] = sklearn.metrics.recall_score(targets, predictions, average="weighted")
+        metrics["F1"] = sklearn.metrics.f1_score(targets, predictions, average="weighted")
+        
 
         return metrics
 

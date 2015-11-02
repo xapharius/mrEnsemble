@@ -6,7 +6,7 @@ Created on Apr 25, 2015
 
 import unittest
 import tests.manager.manager_suite as manager
-import tests.simulator.simulator_suite as simulator
+import tests.simulation.simulator_suite as simulator
 import tests.datahandler.datahandler_suite as data_handler
 import tests.factory.factory_suite as factory
 import tests.ensemble.ensemble_suite as ensemble
