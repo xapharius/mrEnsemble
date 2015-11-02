@@ -13,7 +13,7 @@ class NumericalDataSet(AbstractDataSet):
     '''
 
 
-    def __init__(self, inputs, targets = None):
+    def __init__(self, inputs, targets=None):
         '''
         Constructor
         @param inputs: 2-dim numpy.ndarray (nr_obs * nr_vars)
@@ -22,12 +22,11 @@ class NumericalDataSet(AbstractDataSet):
         '''
         self.inputs = inputs
         self.targets = targets
-        self.nrInputVars = inputs.shape[1]
-        self.nrObservations = inputs.shape[0]
+        self.nrObservations = len(inputs)
 
-        if targets != None:
-            self.nrTargetVars = targets.shape[1]
-            if inputs.shape[0] != targets.shape[0]:
+        if targets is not None:
+            self.nrTargetVars = targets.shape[1] if len(targets.shape) == 2 else 1
+            if len(inputs) != len(targets):
                 raise Exception("number of inputs and targets observations mismatch")
         else:
             self.nrTargetVars = 0
@@ -39,8 +38,8 @@ class NumericalDataSet(AbstractDataSet):
         @return: input and target of observation
         @rtype: tuple (2dim-ndarray, 2dim-ndarray) 
         '''
-        inputArr = np.array([self.inputs[nr, :]])
-        if self.targets != None:
+        inputArr = np.array([self.inputs[nr]])
+        if self.targets is not None:
             targetArr = np.array([self.targets[nr, :]])
         else:
             targetArr = None

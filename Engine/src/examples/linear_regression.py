@@ -14,7 +14,7 @@ if __name__ == '__main__':
     
     nr_params = 11
     nr_label_dim = 1
-    run_type = HADOOP
+    run_type = LOCAL
     data_file = 'hdfs:///user/linda/ml/data/winequality-red.csv' if run_type == HADOOP else '../data/wine-quality/winequality-red.csv'
     input_scalling = None
     target_scalling = None

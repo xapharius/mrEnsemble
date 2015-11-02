@@ -62,7 +62,7 @@ class MultilayerPerceptron(AbstractAlgorithm):
 
         self.weights_arr = weights_arr
 
-    def train(self, data_set):
+    def fit(self, data_set):
         """
         Online Training for given dataset
         :param data_set: NumericalDataSet

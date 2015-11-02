@@ -7,10 +7,13 @@ import numpy as np
 from algorithms.neuralnetwork.feedforward.multilayer_perceptron import MultilayerPerceptron, \
     SimpleUpdate
 import utils.numpyutils as nputils
+import copy
+import time
 from layers import ConvLayer, MaxPoolLayer
 from utils import logging
 from algorithms.AbstractAlgorithm import AbstractAlgorithm
-
+from datahandler.numerical.NumericalDataSet import NumericalDataSet
+import matplotlib.pyplot as plt
 
 class ConvNet(AbstractAlgorithm):
 
@@ -34,12 +37,14 @@ class ConvNet(AbstractAlgorithm):
         A complete example looks like this: [('c', 3, 4), ('p', 2), ('c', 3, 4),
         ('p', 9), ('mlp', 4, 4, 2)]
         """
+        self.split_ratio = 0.8
         self.iterations = iterations
         self.learning_rate = learning_rate
         self.layers = []
         self.activ_func = activation_func[0]
         self.deriv_acitv_func = activation_func[1]
         num_prev_maps = 1
+        self.topo = topo
         # parse topology
         for layer in topo:
             # convolutional layer
@@ -74,13 +79,29 @@ class ConvNet(AbstractAlgorithm):
         outputs.extend(self.mlp.feedforward(outputs[-1])[1:])
         return outputs
 
-    def predict(self, data_set):
+    def predict(self, inputs):
+        predictions = self.predict_extended(inputs)
+        if predictions[0].shape == (1,1):
+            #binary output
+            predictions = np.array(predictions).ravel()
+            predictions[predictions <= 0] = 0
+            predictions[predictions > 0] = 1
+            return predictions[:, np.newaxis].astype(int)
+        # multiclass
+        sparse = np.zeros((len(predictions), predictions[0].shape[1]))
+        for ix, _ in enumerate(sparse):
+            sparse[ix][predictions[ix].argmax()] = 1
+        assert sparse.sum() == len(predictions)
+        return sparse
+
+    def predict_extended(self, inputs):
         """
         Predicts targets for given data set.
         @param data_set: data Set inheriting AbstractDataSet
         :return: List of predictions, i.e. output of this net for each
         observation in the data set.
         """
+        data_set = NumericalDataSet(inputs)
         predictions = []
         # loop through dataset
         for observation, _ in data_set.gen_observations( ):
@@ -98,16 +119,27 @@ class ConvNet(AbstractAlgorithm):
         """
         return self.feedforward(input_arr)[-1]
 
-    def train(self, data_set):
+    def fit(self, inputs, targets):
         """
         Train net with given data set.
         :param data_set: Data set for training.
+        n times random sampling for online learning 
         """
+        split_point = int(len(inputs) * self.split_ratio)
+        data_set = NumericalDataSet(inputs[:split_point], targets[:split_point])
+        val_in = inputs[split_point:]
+        val_targets = targets[split_point:]
+        prev_layers = None
+        prev_mlp = None
+
+        self.train_acc_err = []
+        self.val_acc_err = []
+
         for it in range(self.iterations):
             # randomly select observations as many times as there are
             # observations
-            logging.info("Iteration #" + str(it + 1))
             it_error = 0
+            start = time.time()
             for _ in range(data_set.get_nr_observations()):
                 input_arr, target_arr = data_set.rand_observation()
                 # feed-forward
@@ -130,8 +162,48 @@ class ConvNet(AbstractAlgorithm):
                     layer.calc_gradients()
                     layer.update(self.learning_rate)
 
-            avg_error = it_error / data_set.get_nr_observations()
-            logging.info("  Avg. error: " + str( avg_error ) + "\n")
+            avg_error = it_error / data_set.nrObservations
+            acc_err = self._accuracy_err(inputs, targets)
+            self.train_acc_err.append(acc_err)
 
+            #validation error
+            acc_err = self._accuracy_err(val_in, val_targets)
+            self.val_acc_err.append(acc_err)
+
+            logging.info("Iteration #{} MSE: {}, TrainErr: {:.6f}, ValErr: {:.6f} ({:.2f}s)\n"\
+                         .format(it + 1, avg_error, self.train_acc_err[-1], self.val_acc_err[-1], time.time()-start))
+
+            #break cond
+            if it > 3 and val_in is not None and self.val_acc_err[-1] > self.val_acc_err[-4]:
+                # revert
+                self.layers = prev_layers
+                self.mlp = prev_mlp
+                plt.figure()
+                plt.plot(self.train_acc_err)
+                plt.plot(self.val_acc_err)
+                plt.show(block=False)
+                break
+
+            #prev
+            if it > 0:
+                prev_layers = copy.deepcopy(self.layers)
+                prev_mlp = copy.deepcopy(self.mlp)
+
+
+    def _accuracy_err(self, inputs, targets):
+        if targets.shape[1] == 1:
+            predictions = self.predict(inputs)
+            acc_err = 1 - (predictions == targets).sum() / float(len(inputs))
+        else:
+            predictions = self.predict_extended(inputs)
+            acc_err = 1 - ((np.vstack(predictions)).argmax(axis=1)==targets.argmax(axis=1)).sum() / float(len(inputs))
+        return acc_err
+    
     def set_params(self, parameters):
         pass
+    
+    def get_params(self):
+        dct = {}
+        dct["learning_rate"] = self.learning_rate
+        dct["topo"] = self.topo
+        return dct
